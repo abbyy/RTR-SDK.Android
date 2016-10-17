@@ -1,11 +1,12 @@
 # Samples for ABBYY RTR SDK for Android
 
-This folder contains code samples for ABBYY RTR SDK (https://github.com/abbyysdk/RTR-SDK.Android) 
+This folder contains code samples for [ABBYY RTR SDK](https://github.com/abbyysdk/RTR-SDK.Android) 
 
-LICENSE
+## LICENSE
+
 You are free to modify the samples and include them into your application under the terms of the ABBYY RTR SDK License Agreement and according to the Terms of use of the ABBYY RTR SDK Samples specified below:
 
-Terms of use of the ABBYY RTR SDK Samples
+## Terms of use of the ABBYY RTR SDK Samples
 
 1. The code of the Samples is the property of ABBYY. ABBYY reserves the exclusive rights to the ABBYY RTR SDK Samples.
 
