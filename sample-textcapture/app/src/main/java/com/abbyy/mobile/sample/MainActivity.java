@@ -46,16 +46,16 @@ public class MainActivity extends Activity {
 	// Some application settings that can be changed to modify application behavior:
 	// The camera zoom. Optically zooming with a good camera often improves results
 	// even at close range and it is required at longer ranges.
-	private int cameraZoom = 1;
+	private static final int cameraZoom = 1;
 	// Continuous autofocus is sometimes a problem. You can disable it if it is, or if you want
 	// to experiment with a different approach (starting recognition in autofocus callback)
-	private boolean disableContinuousAutofocus = false;
+	private static final boolean disableContinuousAutofocus = false;
 	// The default behavior in this sample is to start recognition when application is started or
 	// resumed. You can turn off this behavior or remove it completely to simplify the application
-	private boolean startRecognitionOnAppStart = true;
+	private static final boolean startRecognitionOnAppStart = true;
 	// Area of interest specified through margin sizes relative to camera preview size
-	private int areaOfInterestMargin_PercentOfWidth = 4;
-	private int areaOfInterestMargin_PercentOfHeight = 25;
+	private static final int areaOfInterestMargin_PercentOfWidth = 4;
+	private static final int areaOfInterestMargin_PercentOfHeight = 25;
 	// A subset of available languages shown in the UI. See all available languages in Language enum.
 	// To show all languages in the UI you can substitute the list below with:
 	// Language[] languages = Language.values();
@@ -97,6 +97,11 @@ public class MainActivity extends Activity {
 	// UI components
 	private Button startButton; // The start button
 	private TextView warningTextView; // Show warnings from recognizer
+
+	// Text displayed on start button
+	private static final String BUTTON_TEXT_START = "Start";
+	private static final String BUTTON_TEXT_STOP = "Stop";
+	private static final String BUTTON_TEXT_STARTING = "Starting...";
 
 	// To communicate with the Text Capture Service we will need this callback:
 	private IRecognitionService.Callback textCaptureCallback = new IRecognitionService.Callback() {
@@ -208,7 +213,7 @@ public class MainActivity extends Activity {
 	};
 
 	// Start recognition when autofocus completes (used when continuous autofocus is disabled)
-	private Camera.AutoFocusCallback cameraAutoFocusCallback_StartRecognition = new Camera.AutoFocusCallback() {
+	private Camera.AutoFocusCallback startRecognitionCameraAutoFocusCallback = new Camera.AutoFocusCallback() {
 		@Override
 		public void onAutoFocus( boolean success, Camera camera )
 		{
@@ -217,11 +222,11 @@ public class MainActivity extends Activity {
 	};
 
 	// Enable 'Start' button when autofocus completes (used when continuous autofocus is disabled)
-	private Camera.AutoFocusCallback cameraAutoFocusCallback_EnableStartButton = new Camera.AutoFocusCallback() {
+	private Camera.AutoFocusCallback enableStartButtonCameraAutoFocusCallback = new Camera.AutoFocusCallback() {
 		@Override
 		public void onAutoFocus( boolean success, Camera camera )
 		{
-			startButton.setText( "Start" );
+			startButton.setText( BUTTON_TEXT_START );
 			startButton.setEnabled( true );
 		}
 	};
@@ -293,7 +298,7 @@ public class MainActivity extends Activity {
 		// Start the service
 		textCaptureService.start( cameraPreviewSize.width, cameraPreviewSize.height, orientation, areaOfInterest );
 		// Change the text on the start button to 'Stop'
-		startButton.setText( "Stop" );
+		startButton.setText( BUTTON_TEXT_STOP );
 		startButton.setEnabled( true );
 	}
 
@@ -317,7 +322,7 @@ public class MainActivity extends Activity {
 				// Restore normal power saving behaviour
 				previewSurfaceHolder.setKeepScreenOn( false );
 				// Change the text on the stop button back to 'Start'
-				startButton.setText( "Start" );
+				startButton.setText( BUTTON_TEXT_START );
 				startButton.setEnabled( true );
 			}
 		}.execute();
@@ -416,10 +421,10 @@ public class MainActivity extends Activity {
 				startRecognitionWhenReady = false;
 			} else {
 				// Just focus and enable 'Start' button
-				autoFocus( cameraAutoFocusCallback_EnableStartButton );
+				autoFocus( enableStartButtonCameraAutoFocusCallback );
 			}
 		} else {
-			// Continuous focus. Have to use some magic Magic. Some devices expect preview to actually
+			// Continuous focus. Have to use some Magic. Some devices expect preview to actually
 			// start before enabling continuous focus has any effect. So we wait for the camera to
 			// actually start preview
 			handler.postDelayed( new Runnable() {
@@ -442,7 +447,7 @@ public class MainActivity extends Activity {
 					} else {
 						// Just enable 'Start' button
 						startButton.setEnabled( true );
-						startButton.setText( "Start" );
+						startButton.setText( BUTTON_TEXT_START );
 					}
 				}
 			}, 300 );
@@ -477,14 +482,12 @@ public class MainActivity extends Activity {
 
 		// Fill the spinner with available languages selecting the previously chosen language
 		int selectedIndex = -1;
-		int count = 0;
-		for( Language language : languages ) {
-			String name = language.name();
+		for( int i = 0; i < languages.length; i++ ) {
+			String name = languages[i].name();
 			adapter.add( name );
 			if( name.equalsIgnoreCase( selectedLanguage ) ) {
-				selectedIndex = count;
+				selectedIndex = i;
 			}
-			count++;
 		}
 		if( selectedIndex == -1 ) {
 			adapter.insert( selectedLanguage, 0 );
@@ -527,14 +530,14 @@ public class MainActivity extends Activity {
 	// The 'Start' and 'Stop' button
 	public void onStartButtonClick( View view )
 	{
-		if( startButton.getText() == "Stop" ) {
+		if( startButton.getText().equals( BUTTON_TEXT_STOP ) ) {
 			stopRecognition();
 		} else {
 			clearRecognitionResults();
 			startButton.setEnabled( false );
-			startButton.setText( "Starting..." );
+			startButton.setText( BUTTON_TEXT_STARTING );
 			if( disableContinuousAutofocus ) {
-				autoFocus( cameraAutoFocusCallback_StartRecognition );
+				autoFocus( startRecognitionCameraAutoFocusCallback );
 			} else {
 				startRecognition();
 			}
@@ -603,7 +606,7 @@ public class MainActivity extends Activity {
 		if( textCaptureService != null ) {
 			textCaptureService.stop();
 		}
-		startButton.setText( "Start" );
+		startButton.setText( BUTTON_TEXT_START );
 		// Clear recognition results
 		clearRecognitionResults();
 		// Stop preview and release the camera
