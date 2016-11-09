@@ -414,8 +414,8 @@ public class MainActivity extends Activity {
 		surfaceViewWithOverlay.setScaleX( surfaceViewWithOverlay.getWidth(), cameraPreviewSize.height );
 		surfaceViewWithOverlay.setScaleY( surfaceViewWithOverlay.getHeight(), cameraPreviewSize.width );
 		// Area of interest
-		int marginWidth = (areaOfInterestMargin_PercentOfWidth * cameraPreviewSize.height) / 100;
-		int marginHeight = (areaOfInterestMargin_PercentOfHeight * cameraPreviewSize.width) / 100;
+		int marginWidth = ( areaOfInterestMargin_PercentOfWidth * cameraPreviewSize.height ) / 100;
+		int marginHeight = ( areaOfInterestMargin_PercentOfHeight * cameraPreviewSize.width ) / 100;
 		surfaceViewWithOverlay.setAreaOfInterest(
 			new Rect( marginWidth, marginHeight, cameraPreviewSize.height - marginWidth,
 				cameraPreviewSize.width - marginHeight ) );
@@ -696,8 +696,8 @@ public class MainActivity extends Activity {
 					IRecognitionService.TextLine line = lines[i];
 					for( int j = 0; j < 4; j++ ) {
 						this.quads[4 * i + j] = new Point(
-							(scaleNominatorX * line.Quadrangle[j].x) / scaleDenominatorX,
-							(scaleNominatorY * line.Quadrangle[j].y) / scaleDenominatorY
+							( scaleNominatorX * line.Quadrangle[j].x ) / scaleDenominatorX,
+							( scaleNominatorY * line.Quadrangle[j].y ) / scaleDenominatorY
 						);
 					}
 					this.lines[i] = line.Text;
@@ -741,10 +741,10 @@ public class MainActivity extends Activity {
 			canvas.save();
 			if( areaOfInterest != null ) {
 				// Shading and clipping the area of interest
-				int left = (areaOfInterest.left * scaleNominatorX) / scaleDenominatorX;
-				int right = (areaOfInterest.right * scaleNominatorX) / scaleDenominatorX;
-				int top = (areaOfInterest.top * scaleNominatorY) / scaleDenominatorY;
-				int bottom = (areaOfInterest.bottom * scaleNominatorY) / scaleDenominatorY;
+				int left = ( areaOfInterest.left * scaleNominatorX ) / scaleDenominatorX;
+				int right = ( areaOfInterest.right * scaleNominatorX ) / scaleDenominatorX;
+				int top = ( areaOfInterest.top * scaleNominatorY ) / scaleDenominatorY;
+				int bottom = ( areaOfInterest.bottom * scaleNominatorY ) / scaleDenominatorY;
 				canvas.drawRect( 0, 0, width, top, areaOfInterestPaint );
 				canvas.drawRect( 0, bottom, width, height, areaOfInterestPaint );
 				canvas.drawRect( 0, top, left, bottom, areaOfInterestPaint );
@@ -789,7 +789,7 @@ public class MainActivity extends Activity {
 					int sqrLength2 = dx2 * dx2 + dy2 * dy2;
 
 					double angle = 180 * Math.atan2( dy2, dx2 ) / Math.PI;
-					double xskew = (dx1 * dx2 + dy1 * dy2) / Math.sqrt( sqrLength2 );
+					double xskew = ( dx1 * dx2 + dy1 * dy2 ) / Math.sqrt( sqrLength2 );
 					double yskew = Math.sqrt( sqrLength1 - xskew * xskew );
 
 					textPaint.setTextSize( (float) yskew );
@@ -800,7 +800,7 @@ public class MainActivity extends Activity {
 
 					canvas.translate( p0.x, p0.y );
 					canvas.rotate( (float) angle );
-					canvas.skew( -(float) (xskew / yskew), 0.0f );
+					canvas.skew( -(float) ( xskew / yskew ), 0.0f );
 					canvas.scale( (float) xscale, 1.0f );
 
 					canvas.drawText( lines[i], 0, 0, textPaint );
@@ -814,7 +814,7 @@ public class MainActivity extends Activity {
 				int r = width / 50;
 				int y = height - 175 - 2 * r;
 				for( int i = 0; i < stability; i++ ) {
-					int x = width / 2 + 3 * r * (i - 2);
+					int x = width / 2 + 3 * r * ( i - 2 );
 					canvas.drawCircle( x, y, r, textPaint );
 				}
 			}
