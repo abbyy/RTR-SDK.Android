@@ -21,6 +21,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Internet is required when working with online licenses, optional otherwise-->
+
+    <!-- The common types of ABBYY RTR SDK licenses EXPIRE if used without internet access. See documentation for details-->
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
