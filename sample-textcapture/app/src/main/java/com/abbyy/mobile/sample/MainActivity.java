@@ -144,6 +144,10 @@ public class MainActivity extends Activity {
         public void onError(Exception e) {
             // Some error occurred while processing. Log it. Processing will continue
             Log.e( getString( R.string.app_name ) , "Error: " + e.getMessage());
+            if (BuildConfig.DEBUG) {
+                // Make the error easily visible to the developer
+                warningTextView.setText(e.getMessage());
+            }
         }
     };
 
