@@ -167,19 +167,19 @@ public class MainActivity extends Activity {
 
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
-            // When surface is created, attach it to the camera
-            try {
-                camera.setPreviewDisplay(holder);
-                previewSurfaceHolder = holder;
-            } catch (Throwable t) {
-                Log.e(getString( R.string.app_name ), "Exception in setPreviewDisplay()", t);
-            }
+            // When surface is created, store the holder
+            previewSurfaceHolder = holder;
         }
 
         @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-            // When surface is changed (or created), configure camera and start preview
+            // When surface is changed (or created), attach it to the camera, configure camera and start preview
             if( camera != null ) {
+                try {
+                    camera.setPreviewDisplay(holder);
+                } catch (Throwable t) {
+                    Log.e(getString(R.string.app_name), "Exception in setPreviewDisplay()", t);
+                }
                 configureCameraAndStartPreview(camera);
             }
         }
