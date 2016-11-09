@@ -18,8 +18,9 @@
         </activity>
     </application>
 
-    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Internet is required when working with online licenses, optional otherwise-->
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

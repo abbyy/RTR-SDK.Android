@@ -188,28 +188,15 @@ public class MainActivity extends Activity {
 		{
 			// When surface is changed (or created), attach it to the camera, configure camera and start preview
 			if( camera != null ) {
-				try {
-					camera.setPreviewDisplay( holder );
-				} catch( Throwable t ) {
-					Log.e( getString( R.string.app_name ), "Exception in setPreviewDisplay()", t );
-				}
-				configureCameraAndStartPreview( camera );
+				setCameraPreviewDisplayAndStartPreview();
 			}
 		}
 
 		@Override
 		public void surfaceDestroyed( SurfaceHolder holder )
 		{
-			// When surface is destroyed, stop preview and release the camera
-			if( camera != null ) {
-				camera.setPreviewCallbackWithBuffer( null );
-				if( inPreview ) {
-					camera.stopPreview();
-					inPreview = false;
-				}
-				camera.release();
-				camera = null;
-			}
+			// When surface is destroyed, clear previewSurfaceHolder
+			previewSurfaceHolder = null;
 		}
 	};
 
@@ -241,6 +228,31 @@ public class MainActivity extends Activity {
 			} catch( Exception e ) {
 				Log.e( getString( R.string.app_name ), "Error: " + e.getMessage() );
 			}
+		}
+	}
+
+	// Attach the camera to the surface holder, configure the camera and start preview
+	private void setCameraPreviewDisplayAndStartPreview()
+	{
+		try {
+			camera.setPreviewDisplay( previewSurfaceHolder );
+		} catch( Throwable t ) {
+			Log.e( getString( R.string.app_name ), "Exception in setPreviewDisplay()", t );
+		}
+		configureCameraAndStartPreview( camera );
+	}
+
+	// Stop preview and release the camera
+	private void stopPreviewAndReleaseCamera()
+	{
+		if( camera != null ) {
+			camera.setPreviewCallbackWithBuffer( null );
+			if( inPreview ) {
+				camera.stopPreview();
+				inPreview = false;
+			}
+			camera.release();
+			camera = null;
 		}
 	}
 
@@ -590,12 +602,7 @@ public class MainActivity extends Activity {
 		startRecognitionWhenReady = startRecognitionOnAppStart;
 		camera = Camera.open();
 		if( previewSurfaceHolder != null ) {
-			try {
-				camera.setPreviewDisplay( previewSurfaceHolder );
-				configureCameraAndStartPreview( camera );
-			} catch( Exception e ) {
-				Log.e( getString( R.string.app_name ), "Exception in setPreviewDisplay()", e );
-			}
+			setCameraPreviewDisplayAndStartPreview();
 		}
 	}
 
@@ -611,15 +618,7 @@ public class MainActivity extends Activity {
 		startButton.setText( BUTTON_TEXT_START );
 		// Clear recognition results
 		clearRecognitionResults();
-		// Stop preview and release the camera
-		if( camera != null ) {
-			if( inPreview ) {
-				camera.stopPreview();
-				inPreview = false;
-			}
-			camera.release();
-			camera = null;
-		}
+		stopPreviewAndReleaseCamera();
 		super.onPause();
 	}
 
