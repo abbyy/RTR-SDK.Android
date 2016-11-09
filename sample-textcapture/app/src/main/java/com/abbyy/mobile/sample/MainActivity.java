@@ -97,6 +97,7 @@ public class MainActivity extends Activity {
 	// UI components
 	private Button startButton; // The start button
 	private TextView warningTextView; // Show warnings from recognizer
+	private TextView errorTextView; // Show errors from recognizer
 
 	// Text displayed on start button
 	private static final String BUTTON_TEXT_START = "Start";
@@ -156,7 +157,7 @@ public class MainActivity extends Activity {
 			Log.e( getString( R.string.app_name ), "Error: " + e.getMessage() );
 			if( BuildConfig.DEBUG ) {
 				// Make the error easily visible to the developer
-				warningTextView.setText( e.getMessage() );
+				errorTextView.setText( e.getMessage() );
 			}
 		}
 	};
@@ -552,6 +553,7 @@ public class MainActivity extends Activity {
 
 		// Retrieve some ui components
 		warningTextView = (TextView) findViewById( R.id.warningText );
+		errorTextView = (TextView) findViewById( R.id.errorText );
 		startButton = (Button) findViewById( R.id.startButton );
 
 		// Initialize the recognition language spinner
