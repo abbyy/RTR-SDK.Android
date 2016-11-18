@@ -1,22 +1,44 @@
 # Samples for ABBYY RTR SDK for Android
 
-This folder contains code samples for [ABBYY RTR SDK](https://github.com/abbyysdk/RTR-SDK.Android) 
+This folder contains code samples for [ABBYY Real-Time Recognition SDK](http://rtrsdk.com/) for Android.
 
-## LICENSE
+## About ABBYY RTR SDK
+ABBYY Real-Time Recognition SDK provides a technology for recognizing text directly on the smartphone's camera preview screen. Snapping a picture is not required.
 
-You are free to modify the samples and include them into your application under the terms of the ABBYY RTR SDK License Agreement and according to the Terms of use of the ABBYY RTR SDK Samples specified below:
+The samples cover the following scenarios:
 
-## Terms of use of the ABBYY RTR SDK Samples
+* Text Capture (sample-textcapture)
 
-1. The code of the Samples is the property of ABBYY. ABBYY reserves the exclusive rights to the ABBYY RTR SDK Samples.
+	*the basic usage scenario; the user simply points their camera at the text, which is then recognized and displayed or saved in memory*
 
-2. The Developer may include the Samples into the Application and modify them provided the Developer has a valid License in accordance with the terms of the ABBYY RTR SDK License Agreement.
+## Prerequisites
+To try out the real-time OCR technology using these samples, first download the library from [our site](http://rtrsdk.com/). 
 
-3. The Developer may provide the Samples to End Users in binary code as part of the Application or provide in-house access to the Samples, provided that the Application uses the Samples solely for processing the results obtained with the ABBYY RTR SDK.
+The library is free: a fully-functional version for up to 5000 app downloads via Google Play.
 
-4. Any modifications made to the Samples shall be the property of the Developer.
+In the download package you will find:
 
-5. The Developer may transfer to ABBYY the exclusive right to the modifications made by the Developer to the Samples. ABBYY may consider including such modifications into subsequent releases of the Samples. If the Developer transfers to ABBYY the exclusive right to the modifications made by the Developer to the Samples, the Developer may use the said modifications as part of the Samples for its own needs under a simple non-exclusive license and under the same terms that govern the use of the Samples.
 
-6. If the Developer discloses modifications made to the Samples to ABBYY by any means, the exclusive right to such modifications shall be deemed to have been transferred to ABBYY. If the Developer does not wish to transfer to ABBYY the exclusive right to the modifications to the Samples, the Developer shall not disclose to ABBYY the source code of such modifications.
+- the library itself (**libs/abbyy-rtr-sdk-1.0.aar**)
+- the resource files:
+	- **assets/dictionaries** — dictionary support for some of the recognition languages; using a dictionary improves the result quality
+	- **assets/patterns** — recognition databases
+- **license** — your license file and licensing agreement
 
+**Note:** You are **not** allowed to include assets or license in any branch of this sample in public repositories. This notice must be included in all public branches. Anyone wishing to try out the samples should download their own copy of the library from the above link and use the license and assets from that copy.
+
+## Building the samples
+The samples need only a little configuring:
+
+1. Move the license file from the **license** folder to the **assets** folder.
+2. Check that the license name is specified correctly in the sample code:
+
+        public class MainActivity extends Activity {
+            //Licensing
+            private static final String licenseFileName = "license";
+
+3. Copy the **assets** folder into the **app/src/main** folder in the sample folder.
+4. [optional] To save space, you may also want to remove from **assets/dictionaries** the dictionaries for recognition languages your application does not use.
+
+## See also
+You can find extensive documentation on ABBYY Real-Time Recognition SDK [here](http://rtrsdk.com/documentation).
