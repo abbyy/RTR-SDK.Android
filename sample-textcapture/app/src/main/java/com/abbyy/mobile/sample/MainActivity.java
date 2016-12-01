@@ -35,7 +35,7 @@ import android.widget.TextView;
 
 import com.abbyy.mobile.rtr.Engine;
 import com.abbyy.mobile.rtr.Language;
-import com.abbyy.mobile.rtr.IRecognitionService;
+import com.abbyy.mobile.rtr.ITextCaptureService;
 
 public class MainActivity extends Activity {
 
@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
 
 	// The 'Abbyy RTR SDK Engine' and 'Text Capture Service' to be used in this sample application
 	private Engine engine;
-	private IRecognitionService textCaptureService;
+	private ITextCaptureService textCaptureService;
 
 	// The camera and the preview surface
 	private Camera camera;
@@ -105,7 +105,7 @@ public class MainActivity extends Activity {
 	private static final String BUTTON_TEXT_STARTING = "Starting...";
 
 	// To communicate with the Text Capture Service we will need this callback:
-	private IRecognitionService.Callback textCaptureCallback = new IRecognitionService.Callback() {
+	private ITextCaptureService.Callback textCaptureCallback = new ITextCaptureService.Callback() {
 
 		@Override
 		public void onRequestLatestFrame( byte[] buffer )
@@ -117,12 +117,12 @@ public class MainActivity extends Activity {
 		}
 
 		@Override
-		public void onFrameProcessed( IRecognitionService.TextLine[] lines,
-			IRecognitionService.ResultStabilityStatus resultStatus, IRecognitionService.Warning warning )
+		public void onFrameProcessed( ITextCaptureService.TextLine[] lines,
+			ITextCaptureService.ResultStabilityStatus resultStatus, ITextCaptureService.Warning warning )
 		{
 			// Frame has been processed. Here we process recognition results. In this sample we
 			// stop when we get stable result. This callback may continue being called for some time
-			// even after the service have been stopped while the calls queued to this thread (UI thread)
+			// even after the service has been stopped while the calls queued to this thread (UI thread)
 			// are being processed. Just ignore these calls:
 			if( !stableResultHasBeenReached ) {
 				if( resultStatus.ordinal() >= 3 ) {
@@ -130,14 +130,14 @@ public class MainActivity extends Activity {
 					surfaceViewWithOverlay.setLines( lines, resultStatus );
 				} else {
 					// The result is not stable. Show nothing
-					surfaceViewWithOverlay.setLines( null, IRecognitionService.ResultStabilityStatus.NotReady );
+					surfaceViewWithOverlay.setLines( null, ITextCaptureService.ResultStabilityStatus.NotReady );
 				}
 
 				// Show the warning from the service if any. These warnings are intended for the user
 				// to take some action (zooming in, checking recognition language, etc.)
 				warningTextView.setText( warning != null ? warning.name() : "" );
 
-				if( resultStatus == IRecognitionService.ResultStabilityStatus.Stable ) {
+				if( resultStatus == ITextCaptureService.ResultStabilityStatus.Stable ) {
 					// Stable result has been reached. Stop the service
 					stopRecognition();
 					stableResultHasBeenReached = true;
@@ -175,7 +175,7 @@ public class MainActivity extends Activity {
 		@Override
 		public void onPreviewFrame( byte[] data, Camera camera )
 		{
-			// The buffer that we have given to the camera in IRecognitionService.Callback.onRequestLatestFrame
+			// The buffer that we have given to the camera in ITextCaptureService.Callback.onRequestLatestFrame
 			// above have been filled. Send it back to the Text Capture Service
 			textCaptureService.submitRequestedFrame( data );
 		}
@@ -353,7 +353,7 @@ public class MainActivity extends Activity {
 	void clearRecognitionResults()
 	{
 		stableResultHasBeenReached = false;
-		surfaceViewWithOverlay.setLines( null, IRecognitionService.ResultStabilityStatus.NotReady );
+		surfaceViewWithOverlay.setLines( null, ITextCaptureService.ResultStabilityStatus.NotReady );
 		surfaceViewWithOverlay.setFillBackground( false );
 	}
 
@@ -410,8 +410,8 @@ public class MainActivity extends Activity {
 		camera.setParameters( parameters );
 
 		// The camera will fill the buffers with image data and notify us through the callback.
-		// The buffers will be sent to camera on requests from recognition service (see implementation
-		// of IRecognitionService.Callback.onRequestLatestFrame above)
+		// The buffers will be sent to camera on requests from text capture service (see implementation
+		// of ITextCaptureService.Callback.onRequestLatestFrame above)
 		camera.setPreviewCallbackWithBuffer( cameraPreviewCallback );
 
 		// Clear the previous recognition results if any
@@ -528,7 +528,7 @@ public class MainActivity extends Activity {
 			{
 				String recognitionLanguage = (String) parent.getItemAtPosition( position );
 				if( textCaptureService != null ) {
-					// Reconfigure the recognition service each time a new language is selected
+					// Reconfigure the text capture service each time a new language is selected
 					// This is also called when the spinner is first shown
 					textCaptureService.setRecognitionLanguage( Language.valueOf( recognitionLanguage ) );
 					clearRecognitionResults();
@@ -694,14 +694,14 @@ public class MainActivity extends Activity {
 			return areaOfInterest;
 		}
 
-		public void setLines( IRecognitionService.TextLine[] lines,
-			IRecognitionService.ResultStabilityStatus resultStatus )
+		public void setLines( ITextCaptureService.TextLine[] lines,
+			ITextCaptureService.ResultStabilityStatus resultStatus )
 		{
 			if( lines != null && scaleDenominatorX > 0 && scaleDenominatorY > 0 ) {
 				this.quads = new Point[lines.length * 4];
 				this.lines = new String[lines.length];
 				for( int i = 0; i < lines.length; i++ ) {
-					IRecognitionService.TextLine line = lines[i];
+					ITextCaptureService.TextLine line = lines[i];
 					for( int j = 0; j < 4; j++ ) {
 						this.quads[4 * i + j] = new Point(
 							( scaleNominatorX * line.Quadrangle[j].x ) / scaleDenominatorX,
