@@ -30,7 +30,8 @@ In the download package you will find:
 ## Building the samples
 The samples need only a little configuring:
 
-1. Move the license file from the **license** folder to the **assets** folder.
+1. Please change the application ID before modifying or otherwise using the sample.
+2. Move the license file from the **license** folder to the **assets** folder.
 2. Check that the license name is specified correctly in the sample code:
 
         public class MainActivity extends Activity {
