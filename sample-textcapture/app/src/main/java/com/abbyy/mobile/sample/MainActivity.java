@@ -34,22 +34,22 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.abbyy.mobile.rtr.Engine;
-import com.abbyy.mobile.rtr.Language;
 import com.abbyy.mobile.rtr.ITextCaptureService;
+import com.abbyy.mobile.rtr.Language;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
 	// Licensing
-	private static final String licenseFileName = "license";
+	private static final String licenseFileName = "AbbyyRtrSdk.license";
 
 	///////////////////////////////////////////////////////////////////////////////
 	// Some application settings that can be changed to modify application behavior:
 	// The camera zoom. Optically zooming with a good camera often improves results
-	// even at close range and it is required at longer ranges.
+	// even at close range and it might be required at longer ranges.
 	private static final int cameraZoom = 1;
-	// Continuous autofocus is sometimes a problem. You can disable it if it is, or if you want
-	// to experiment with a different approach (starting recognition in autofocus callback)
-	private static final boolean disableContinuousAutofocus = false;
 	// The default behavior in this sample is to start recognition when application is started or
 	// resumed. You can turn off this behavior or remove it completely to simplify the application
 	private static final boolean startRecognitionOnAppStart = true;
@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
 		@Override
 		public void onRequestLatestFrame( byte[] buffer )
 		{
-			// The service asks to fill the buffer with image data for a latest frame in NV21 format.
+			// The service asks to fill the buffer with image data for the latest frame in NV21 format.
 			// Delegate this task to the camera. When the buffer is filled we will receive
 			// Camera.PreviewCallback.onPreviewFrame (see below)
 			camera.addCallbackBuffer( buffer );
@@ -133,7 +133,7 @@ public class MainActivity extends Activity {
 					surfaceViewWithOverlay.setLines( null, ITextCaptureService.ResultStabilityStatus.NotReady );
 				}
 
-				// Show the warning from the service if any. These warnings are intended for the user
+				// Show the warning from the service if any. The warnings are intended for the user
 				// to take some action (zooming in, checking recognition language, etc.)
 				warningTextView.setText( warning != null ? warning.name() : "" );
 
@@ -153,7 +153,7 @@ public class MainActivity extends Activity {
 		@Override
 		public void onError( Exception e )
 		{
-			// Some error occurred while processing. Log it. Processing will continue
+			// An error occurred while processing. Log it. Processing will continue
 			Log.e( getString( R.string.app_name ), "Error: " + e.getMessage() );
 			if( BuildConfig.DEBUG ) {
 				// Make the error easily visible to the developer
@@ -208,35 +208,139 @@ public class MainActivity extends Activity {
 		}
 	};
 
-	// Start recognition when autofocus completes (used when continuous autofocus is disabled)
+	// Start recognition when autofocus completes (used when continuous autofocus is not enabled)
 	private Camera.AutoFocusCallback startRecognitionCameraAutoFocusCallback = new Camera.AutoFocusCallback() {
 		@Override
 		public void onAutoFocus( boolean success, Camera camera )
 		{
+			onAutoFocusFinished( success, camera );
 			startRecognition();
 		}
 	};
 
-	// Enable 'Start' button when autofocus completes (used when continuous autofocus is disabled)
-	private Camera.AutoFocusCallback enableStartButtonCameraAutoFocusCallback = new Camera.AutoFocusCallback() {
+	// Simple autofocus callback
+	private Camera.AutoFocusCallback simpleCameraAutoFocusCallback = new Camera.AutoFocusCallback() {
 		@Override
 		public void onAutoFocus( boolean success, Camera camera )
 		{
-			startButton.setText( BUTTON_TEXT_START );
-			startButton.setEnabled( true );
+			onAutoFocusFinished( success, camera );
 		}
 	};
+
+	// Enable 'Start' button and switching to continuous focus mode (if possible) when autofocus completes 
+	private Camera.AutoFocusCallback finishCameraInitialisationAutoFocusCallback = new Camera.AutoFocusCallback() {
+		@Override
+		public void onAutoFocus( boolean success, Camera camera )
+		{
+			onAutoFocusFinished( success, camera );
+			startButton.setText( BUTTON_TEXT_START );
+			startButton.setEnabled( true );
+			if( startRecognitionWhenReady ) {
+				startRecognition();
+				startRecognitionWhenReady = false;
+			}
+		}
+	};
+
+	// Autofocus by tap
+	private View.OnClickListener clickListener = new View.OnClickListener() {
+		@Override public void onClick( View v )
+		{
+			// if BUTTON_TEXT_STARTING autofocus is already in progress, it is incorrect to interrupt it
+			if( !startButton.getText().equals( BUTTON_TEXT_STARTING ) ) {
+				autoFocus( simpleCameraAutoFocusCallback );
+			}
+		}
+	};
+
+	private void onAutoFocusFinished( boolean success, Camera camera )
+	{
+		if( isContinuousVideoFocusModeEnabled( camera ) ) {
+			setCameraFocusMode( Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO );
+		} else {
+			if( !success ) {
+				autoFocus( simpleCameraAutoFocusCallback );
+			}
+		}
+	}
 
 	// Start autofocus (used when continuous autofocus is disabled)
 	private void autoFocus( Camera.AutoFocusCallback callback )
 	{
 		if( camera != null ) {
 			try {
+				setCameraFocusMode( Camera.Parameters.FOCUS_MODE_AUTO );
 				camera.autoFocus( callback );
 			} catch( Exception e ) {
 				Log.e( getString( R.string.app_name ), "Error: " + e.getMessage() );
 			}
 		}
+	}
+
+	// Checks that FOCUS_MODE_CONTINUOUS_VIDEO supported
+	private boolean isContinuousVideoFocusModeEnabled( Camera camera )
+	{
+		return camera.getParameters().getSupportedFocusModes().contains( Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO );
+	}
+
+	// Sets camera focus mode and focus area
+	private void setCameraFocusMode( String mode )
+	{
+		// Camera sees it as rotated 90 degrees, so there's some confusion with what is width and what is height)
+		int width = 0;
+		int height = 0;
+		int halfCoordinates = 1000;
+		int lengthCoordinates = 2000;
+		Rect area = surfaceViewWithOverlay.getAreaOfInterest();
+		switch( orientation ) {
+			case 0:
+			case 180:
+				height = cameraPreviewSize.height;
+				width = cameraPreviewSize.width;
+				break;
+			case 90:
+			case 270:
+				width = cameraPreviewSize.height;
+				height = cameraPreviewSize.width;
+				break;
+		}
+
+		camera.cancelAutoFocus();
+		Camera.Parameters parameters = camera.getParameters();
+		// Set focus and metering area equal to the area of interest. This action is essential because by defaults camera
+		// focuses on the center of the frame, while the area of interest in this sample application is at the top
+		List<Camera.Area> focusAreas = new ArrayList<>();
+		Rect areasRect;
+
+		switch( orientation ) {
+			case 0:
+				areasRect = new Rect( -halfCoordinates + area.left * lengthCoordinates / width, -halfCoordinates + area.top * lengthCoordinates / height,
+					-halfCoordinates + lengthCoordinates * area.right / width, -halfCoordinates + lengthCoordinates * area.bottom / height );
+				break;
+			case 180:
+				areasRect = new Rect( halfCoordinates - area.right * lengthCoordinates / width, halfCoordinates - area.bottom * lengthCoordinates / height,
+					halfCoordinates - lengthCoordinates * area.left / width, halfCoordinates - lengthCoordinates * area.top / height );
+				break;
+			case 90:
+				areasRect = new Rect( -halfCoordinates + area.top * lengthCoordinates / height, halfCoordinates - area.right * lengthCoordinates / width,
+					-halfCoordinates + lengthCoordinates * area.bottom / height, halfCoordinates - lengthCoordinates * area.left / width );
+				break;
+			case 270:
+				areasRect = new Rect( halfCoordinates - area.bottom * lengthCoordinates / height, -halfCoordinates + area.left * lengthCoordinates / width,
+					halfCoordinates - lengthCoordinates * area.top / height, -halfCoordinates + lengthCoordinates * area.right / width );
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
+
+		focusAreas.add( new Camera.Area( areasRect, 800 ) );
+		parameters.setFocusAreas( focusAreas );
+		parameters.setMeteringAreas( focusAreas );
+
+		parameters.setFocusMode( mode );
+
+		// Commit the camera parameters
+		camera.setParameters( parameters );
 	}
 
 	// Attach the camera to the surface holder, configure the camera and start preview
@@ -316,6 +420,8 @@ public class MainActivity extends Activity {
 		previewSurfaceHolder.setKeepScreenOn( true );
 		// Get area of interest (in coordinates of preview frames)
 		Rect areaOfInterest = new Rect( surfaceViewWithOverlay.getAreaOfInterest() );
+		// Clear error message
+		errorTextView.setText( "" );
 		// Start the service
 		textCaptureService.start( cameraPreviewSize.width, cameraPreviewSize.height, orientation, areaOfInterest );
 		// Change the text on the start button to 'Stop'
@@ -340,8 +446,10 @@ public class MainActivity extends Activity {
 
 			protected void onPostExecute( Void result )
 			{
-				// Restore normal power saving behaviour
-				previewSurfaceHolder.setKeepScreenOn( false );
+				if( previewSurfaceHolder != null ) {
+					// Restore normal power saving behaviour
+					previewSurfaceHolder.setKeepScreenOn( false );
+				}
 				// Change the text on the stop button back to 'Start'
 				startButton.setText( BUTTON_TEXT_START );
 				startButton.setEnabled( true );
@@ -357,26 +465,41 @@ public class MainActivity extends Activity {
 		surfaceViewWithOverlay.setFillBackground( false );
 	}
 
+	// Returns orientation of camera
+	private int getCameraOrientation()
+	{
+		Display display = getWindowManager().getDefaultDisplay();
+		int orientation = 0;
+		switch( display.getRotation() ) {
+			case Surface.ROTATION_0:
+				orientation = 0;
+				break;
+			case Surface.ROTATION_90:
+				orientation = 90;
+				break;
+			case Surface.ROTATION_180:
+				orientation = 180;
+				break;
+			case Surface.ROTATION_270:
+				orientation = 270;
+				break;
+		}
+		for( int i = 0; i < Camera.getNumberOfCameras(); i++ ) {
+			Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+			Camera.getCameraInfo( i, cameraInfo );
+			if( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK ) {
+				return ( cameraInfo.orientation - orientation + 360 ) % 360;
+			}
+		}
+		// If Camera.open() succeed, this point of code never reached
+		return -1;
+	}
+
 	private void configureCameraAndStartPreview( Camera camera )
 	{
 		// Configure camera orientation. This is needed for both correct preview orientation
 		// and recognition
-
-		Display display = getWindowManager().getDefaultDisplay();
-		switch( display.getRotation() ) {
-			case Surface.ROTATION_0:
-				orientation = 90;
-				break;
-			case Surface.ROTATION_90:
-				orientation = 0;
-				break;
-			case Surface.ROTATION_180:
-				orientation = 270;
-				break;
-			case Surface.ROTATION_270:
-				orientation = 180;
-				break;
-		}
+		orientation = getCameraOrientation();
 		camera.setDisplayOrientation( orientation );
 
 		// Configure camera parameters
@@ -410,7 +533,7 @@ public class MainActivity extends Activity {
 		camera.setParameters( parameters );
 
 		// The camera will fill the buffers with image data and notify us through the callback.
-		// The buffers will be sent to camera on requests from text capture service (see implementation
+		// The buffers will be sent to camera on requests from recognition service (see implementation
 		// of ITextCaptureService.Callback.onRequestLatestFrame above)
 		camera.setPreviewCallbackWithBuffer( cameraPreviewCallback );
 
@@ -431,48 +554,8 @@ public class MainActivity extends Activity {
 		// Start preview
 		camera.startPreview();
 
-		// Choosing autofocus or continuous focus and whether to start recognition immediately or after autofocus or manually
-		if( disableContinuousAutofocus ||
-			!parameters.getSupportedFocusModes().contains( Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO ) ) {
-			// No continuous focus
-			if( startRecognitionWhenReady ) {
-				// Start recognition (if you look inside onStartButtonClick it is actually delayed
-				// till autofocus completes
-				onStartButtonClick( startButton );
-				startRecognitionWhenReady = false;
-			} else {
-				// Just focus and enable 'Start' button
-				autoFocus( enableStartButtonCameraAutoFocusCallback );
-			}
-		} else {
-			// Continuous focus. Have to use some Magic. Some devices expect preview to actually
-			// start before enabling continuous focus has any effect. So we wait for the camera to
-			// actually start preview
-			handler.postDelayed( new Runnable() {
-				public void run()
-				{
-					Camera _camera = MainActivity.this.camera;
-					Camera.Parameters parameters = _camera.getParameters();
-					parameters.setFocusMode( Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO );
-					_camera.setParameters( parameters );
-					if( startRecognitionWhenReady ) {
-						// Give some time for the camera to focus and start recognition
-						handler.postDelayed( new Runnable() {
-							public void run()
-							{
-								onStartButtonClick( startButton );
-							}
-
-						}, 300 );
-						startRecognitionWhenReady = false;
-					} else {
-						// Just enable 'Start' button
-						startButton.setEnabled( true );
-						startButton.setText( BUTTON_TEXT_START );
-					}
-				}
-			}, 300 );
-		}
+		setCameraFocusMode( Camera.Parameters.FOCUS_MODE_AUTO );
+		autoFocus( finishCameraInitialisationAutoFocusCallback );
 
 		inPreview = true;
 	}
@@ -528,7 +611,7 @@ public class MainActivity extends Activity {
 			{
 				String recognitionLanguage = (String) parent.getItemAtPosition( position );
 				if( textCaptureService != null ) {
-					// Reconfigure the text capture service each time a new language is selected
+					// Reconfigure the recognition service each time a new language is selected
 					// This is also called when the spinner is first shown
 					textCaptureService.setRecognitionLanguage( Language.valueOf( recognitionLanguage ) );
 					clearRecognitionResults();
@@ -557,7 +640,7 @@ public class MainActivity extends Activity {
 			clearRecognitionResults();
 			startButton.setEnabled( false );
 			startButton.setText( BUTTON_TEXT_STARTING );
-			if( disableContinuousAutofocus ) {
+			if( !isContinuousVideoFocusModeEnabled( camera ) ) {
 				autoFocus( startRecognitionCameraAutoFocusCallback );
 			} else {
 				startRecognition();
@@ -598,6 +681,8 @@ public class MainActivity extends Activity {
 			// loading the engine the preview will never start and we will never attempt calling the service
 			surfaceViewWithOverlay.getHolder().addCallback( surfaceCallback );
 		}
+
+		layout.setOnClickListener( clickListener );
 	}
 
 	@Override
@@ -747,6 +832,13 @@ public class MainActivity extends Activity {
 			int width = canvas.getWidth();
 			int height = canvas.getHeight();
 			canvas.save();
+			// If there is any result
+			if( lines != null ) {
+				// Shade (whiten) the background when stable
+				if( backgroundPaint != null ) {
+					canvas.drawRect( 0, 0, width, height, backgroundPaint );
+				}
+			}
 			if( areaOfInterest != null ) {
 				// Shading and clipping the area of interest
 				int left = ( areaOfInterest.left * scaleNominatorX ) / scaleDenominatorX;
@@ -762,11 +854,7 @@ public class MainActivity extends Activity {
 			}
 			// If there is any result
 			if( lines != null ) {
-				// Shading (whitening) the background when stable
-				if( backgroundPaint != null ) {
-					canvas.drawRect( 0, 0, width, height, backgroundPaint );
-				}
-				// Drawing the text lines
+				// Draw the text lines
 				for( int i = 0; i < lines.length; i++ ) {
 					// The boundaries
 					int j = 4 * i;
@@ -817,7 +905,7 @@ public class MainActivity extends Activity {
 			}
 			canvas.restore();
 
-			// Drawing the 'progress'
+			// Draw the 'progress'
 			if( stability > 0 ) {
 				int r = width / 50;
 				int y = height - 175 - 2 * r;
