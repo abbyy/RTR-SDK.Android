@@ -1,0 +1,24 @@
+<project name="abbyy-rtr-sample-textcapture">
+  <target name="Debug">
+		<exec executable="cmd" 
+			dir="${basedir}" 
+			failonerror="true">
+			<arg value="/c"/>
+			<arg value="gradlew.bat assembleDebug > ${env.ROOT}/Build/Logs/Android_gradle_${ant.project.name}_${config}_${build.abi}.log 2>&amp;1"/>
+	</exec>
+  </target>
+
+  <target name="debug" depends="Debug" />
+    
+  <target name="Release">
+		<exec executable="cmd" 
+			dir="${basedir}" 
+			failonerror="true">
+			<arg value="/c"/>
+			<arg value="gradlew.bat assembleRelease > ${env.ROOT}/Build/Logs/Android_gradle_${ant.project.name}_${config}_${build.abi}.log 2>&amp;1"/>
+		</exec>
+  </target>
+
+  <target name="release" depends="Release" />
+
+</project>
