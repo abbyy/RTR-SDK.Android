@@ -447,7 +447,7 @@ public class MainActivity extends Activity {
 					// Requires MRZ.rom to be present in patterns
 					return engine.createDataCaptureService( "MRZ", dataCaptureCallback );
 				default:
-					throw new IndexOutOfBoundsException();
+					return engine.createDataCaptureService( scenario.name(), dataCaptureCallback );
 			}
 		}
 	}
@@ -884,8 +884,9 @@ public class MainActivity extends Activity {
 				for( int i = 0; i < fields.length; i++ ) {
 					count += fields[i].Components.length;
 					fieldNames[i] = fields[i].Name;
+					Point[] srcQuad = fields[i].Quadrangle;
 					for( int j = 0; j < 4; j++ ) {
-						fieldsQuads[i * 4 + j] = transformPoint( fields[i].Quadrangle[j] );
+						fieldsQuads[i * 4 + j] = ( srcQuad != null ? transformPoint( srcQuad[j] ) : null );
 					}
 				}
 
@@ -894,8 +895,9 @@ public class MainActivity extends Activity {
 				int index = 0;
 				for( IDataCaptureService.DataField field : fields ) {
 					for( IDataCaptureService.TextLine component : field.Components ) {
+						Point[] srcQuad = component.Quadrangle;
 						for( int j = 0; j < 4; j++ ) {
-							this.quads[4 * index + j] = transformPoint( component.Quadrangle[j] );
+							this.quads[4 * index + j] = ( srcQuad != null ? transformPoint( srcQuad[j] ) : null );
 						}
 						this.fieldValues[index] = component.Text;
 						index++;
@@ -976,11 +978,13 @@ public class MainActivity extends Activity {
 				// Draw fields boundaries and names
 				for( int i = 0; i < fieldNames.length; i++ ) {
 					int j = 4 * i;
-					drawBoundary( canvas, j, fieldsQuads );
-					String fieldName = fieldNames[i];
-					if( fieldName != null ) {
-						drawText( canvas, fieldsQuads[j + 0], fieldsQuads[j + 1], fieldsQuads[j + 3], fieldPaint, true,
-							fieldName );
+					if( fieldsQuads[j] != null ) {
+						drawBoundary( canvas, j, fieldsQuads );
+						String fieldName = fieldNames[i];
+						if( fieldName != null ) {
+							drawText( canvas, fieldsQuads[j + 0], fieldsQuads[j + 1], fieldsQuads[j + 3], fieldPaint, true,
+								fieldName );
+						}
 					}
 				}
 
@@ -988,10 +992,21 @@ public class MainActivity extends Activity {
 				for( int i = 0; i < fieldValues.length; i++ ) {
 					// The boundaries
 					int j = 4 * i;
-					drawBoundary( canvas, j, quads );
-
-					// The skewed text (drawn by coordinate transform)
-					drawText( canvas, quads[j + 0], quads[j + 1], quads[j + 3], textPaint, false, fieldValues[i] );
+					if( quads[j] != null ) {
+						drawBoundary( canvas, j, quads );
+						// The skewed text (drawn by coordinate transform)
+						drawText( canvas, quads[j + 0], quads[j + 1], quads[j + 3], textPaint, false, fieldValues[i] );
+					} else {
+						// Field geometry not defined, just dumping all the text
+						int left = ( areaOfInterest.left * scaleNominatorX ) / scaleDenominatorX;
+						int top = ( areaOfInterest.top * scaleNominatorY ) / scaleDenominatorY;
+						fieldPaint.setTextSize( 30 );
+						String label = fieldNames[i] + ": ";
+						fieldPaint.getTextBounds( label, 0, label.length(), textBounds );
+						canvas.drawText( label, left + 35, top + ( i + 1 ) * 35 + 35, fieldPaint );
+						textPaint.setTextSize( 30 );
+						canvas.drawText( fieldValues[i], left + 35 + textBounds.right,top + ( i + 1 ) * 35 + 35, textPaint );
+					}
 				}
 			}
 			canvas.restore();
