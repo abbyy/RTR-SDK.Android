@@ -158,12 +158,17 @@ public class MainActivity extends Activity {
 			if( BuildConfig.DEBUG ) {
 				// Make the error easily visible to the developer
 				String message = e.getMessage();
-				if( message.contains( "ChineseJapanese.rom" ) ) {
-					message = "Chinese, Japanese and Korean are available in EXTENDED version only. Contact us for more information.";
-				} if( message.contains( "Russian.edc" ) ) {
-					message = "Cyrillic script languages are available in EXTENDED version only. Contact us for more information.";
-				} else if( message.contains( ".trdic" ) ) {
-					message = "Translation is available in EXTENDED version only. Contact us for more information.";
+				if( message == null ) {
+					message = "Unspecified error while creating the service. See logcat for details.";
+				} else {
+					if( message.contains( "ChineseJapanese.rom" ) ) {
+						message = "Chinese, Japanese and Korean are available in EXTENDED version only. Contact us for more information.";
+					}
+					if( message.contains( "Russian.edc" ) ) {
+						message = "Cyrillic script languages are available in EXTENDED version only. Contact us for more information.";
+					} else if( message.contains( ".trdic" ) ) {
+						message = "Translation is available in EXTENDED version only. Contact us for more information.";
+					}
 				}
 				errorTextView.setText( message );
 			}
