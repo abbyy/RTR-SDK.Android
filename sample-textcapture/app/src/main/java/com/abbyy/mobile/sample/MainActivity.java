@@ -314,20 +314,36 @@ public class MainActivity extends Activity {
 
 		switch( orientation ) {
 			case 0:
-				areasRect = new Rect( -halfCoordinates + area.left * lengthCoordinates / width, -halfCoordinates + area.top * lengthCoordinates / height,
-					-halfCoordinates + lengthCoordinates * area.right / width, -halfCoordinates + lengthCoordinates * area.bottom / height );
+				areasRect = new Rect(
+					-halfCoordinates + area.left * lengthCoordinates / width,
+					-halfCoordinates + area.top * lengthCoordinates / height,
+					-halfCoordinates + lengthCoordinates * area.right / width,
+					-halfCoordinates + lengthCoordinates * area.bottom / height
+				);
 				break;
 			case 180:
-				areasRect = new Rect( halfCoordinates - area.right * lengthCoordinates / width, halfCoordinates - area.bottom * lengthCoordinates / height,
-					halfCoordinates - lengthCoordinates * area.left / width, halfCoordinates - lengthCoordinates * area.top / height );
+				areasRect = new Rect(
+					halfCoordinates - area.right * lengthCoordinates / width,
+					halfCoordinates - area.bottom * lengthCoordinates / height,
+					halfCoordinates - lengthCoordinates * area.left / width,
+					halfCoordinates - lengthCoordinates * area.top / height
+				);
 				break;
 			case 90:
-				areasRect = new Rect( -halfCoordinates + area.top * lengthCoordinates / height, halfCoordinates - area.right * lengthCoordinates / width,
-					-halfCoordinates + lengthCoordinates * area.bottom / height, halfCoordinates - lengthCoordinates * area.left / width );
+				areasRect = new Rect(
+					-halfCoordinates + area.top * lengthCoordinates / height,
+					halfCoordinates - area.right * lengthCoordinates / width,
+					-halfCoordinates + lengthCoordinates * area.bottom / height,
+					halfCoordinates - lengthCoordinates * area.left / width
+				);
 				break;
 			case 270:
-				areasRect = new Rect( halfCoordinates - area.bottom * lengthCoordinates / height, -halfCoordinates + area.left * lengthCoordinates / width,
-					halfCoordinates - lengthCoordinates * area.top / height, -halfCoordinates + lengthCoordinates * area.right / width );
+				areasRect = new Rect(
+					halfCoordinates - area.bottom * lengthCoordinates / height,
+					-halfCoordinates + area.left * lengthCoordinates / width,
+					halfCoordinates - lengthCoordinates * area.top / height,
+					-halfCoordinates + lengthCoordinates * area.right / width
+				);
 				break;
 			default:
 				throw new IllegalArgumentException();
@@ -505,7 +521,8 @@ public class MainActivity extends Activity {
 		// Configure camera parameters
 		Camera.Parameters parameters = camera.getParameters();
 
-		// Select preview size. The preferred size is 1080x720 or just below this
+		// Select preview size. The preferred size for Text Capture scenario is 1080x720. In some scenarios you might
+		// consider using higher resolution (small text, complex background) or lower resolution (better performance, less noise)
 		cameraPreviewSize = null;
 		for( Camera.Size size : parameters.getSupportedPreviewSizes() ) {
 			if( size.height <= 720 || size.width <= 720 ) {
@@ -540,16 +557,32 @@ public class MainActivity extends Activity {
 		// Clear the previous recognition results if any
 		clearRecognitionResults();
 
+		// Width and height of the preview according to the current screen rotation
+		int width = 0;
+		int height = 0;
+		switch( orientation ) {
+			case 0:
+			case 180:
+				width = cameraPreviewSize.width;
+				height = cameraPreviewSize.height;
+				break;
+			case 90:
+			case 270:
+				width = cameraPreviewSize.height;
+				height = cameraPreviewSize.width;
+				break;
+		}
+
 		// Configure the view scale and area of interest (camera sees it as rotated 90 degrees, so
 		// there's some confusion with what is width and what is height)
-		surfaceViewWithOverlay.setScaleX( surfaceViewWithOverlay.getWidth(), cameraPreviewSize.height );
-		surfaceViewWithOverlay.setScaleY( surfaceViewWithOverlay.getHeight(), cameraPreviewSize.width );
+		surfaceViewWithOverlay.setScaleX( surfaceViewWithOverlay.getWidth(), width );
+		surfaceViewWithOverlay.setScaleY( surfaceViewWithOverlay.getHeight(), height );
 		// Area of interest
-		int marginWidth = ( areaOfInterestMargin_PercentOfWidth * cameraPreviewSize.height ) / 100;
-		int marginHeight = ( areaOfInterestMargin_PercentOfHeight * cameraPreviewSize.width ) / 100;
+		int marginWidth = ( areaOfInterestMargin_PercentOfWidth * width ) / 100;
+		int marginHeight = ( areaOfInterestMargin_PercentOfHeight * height ) / 100;
 		surfaceViewWithOverlay.setAreaOfInterest(
-			new Rect( marginWidth, marginHeight, cameraPreviewSize.height - marginWidth,
-				cameraPreviewSize.width - marginHeight ) );
+			new Rect( marginWidth, marginHeight, width - marginWidth,
+				height - marginHeight ) );
 
 		// Start preview
 		camera.startPreview();

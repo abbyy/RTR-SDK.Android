@@ -57,25 +57,27 @@ public class MainActivity extends Activity {
 	// Area of interest specified through margin sizes relative to camera preview size
 	private static final int areaOfInterestMargin_PercentOfWidth = 4;
 	private static final int areaOfInterestMargin_PercentOfHeight = 25;
+
 	// A set of available sample data capture scenarios;
 	private enum SampleDataCaptureScenarios {
 		// Simple data capture scenarios with regular expressions
 		Number( "Integer number:  12  345  6789" ),
 		Code( "Mix of digits with letters:  X6YZ64  32VPA  zyy777" ),
-		PartID( "Part or product id:  002A-X345-D3-BBCD  AZ-5-A34.B  001.123.AX"),
+		PartID( "Part or product id:  002A-X345-D3-BBCD  AZ-5-A34.B  001.123.AX" ),
 		AreaCode( "Digits in round brackets as found in phone numbers:  (01)  (23)  (4567)" ),
 		ChineseJapaneseDate( "2008年8月8日" ),
 		// Some built-in data capture scenarios (the list is incomplete)
 		IBAN( "International Bank Account Number (DE, ES, FR, GB)" ),
-		MRZ( "Machine Readable Zone in identity documents")
-		;
+		MRZ( "Machine Readable Zone in identity documents" );
 
 		private SampleDataCaptureScenarios( String usage )
 		{
 			Usage = usage;
 		}
+
 		public String Usage;
-	};
+	}
+
 	private SampleDataCaptureScenarios currentScenario;
 	///////////////////////////////////////////////////////////////////////////////
 
@@ -322,20 +324,36 @@ public class MainActivity extends Activity {
 
 		switch( orientation ) {
 			case 0:
-				areasRect = new Rect( -halfCoordinates + area.left * lengthCoordinates / width, -halfCoordinates + area.top * lengthCoordinates / height,
-					-halfCoordinates + lengthCoordinates * area.right / width, -halfCoordinates + lengthCoordinates * area.bottom / height );
+				areasRect = new Rect(
+					-halfCoordinates + area.left * lengthCoordinates / width,
+					-halfCoordinates + area.top * lengthCoordinates / height,
+					-halfCoordinates + lengthCoordinates * area.right / width,
+					-halfCoordinates + lengthCoordinates * area.bottom / height
+				);
 				break;
 			case 180:
-				areasRect = new Rect( halfCoordinates - area.right * lengthCoordinates / width, halfCoordinates - area.bottom * lengthCoordinates / height,
-					halfCoordinates - lengthCoordinates * area.left / width, halfCoordinates - lengthCoordinates * area.top / height );
+				areasRect = new Rect(
+					halfCoordinates - area.right * lengthCoordinates / width,
+					halfCoordinates - area.bottom * lengthCoordinates / height,
+					halfCoordinates - lengthCoordinates * area.left / width,
+					halfCoordinates - lengthCoordinates * area.top / height
+				);
 				break;
 			case 90:
-				areasRect = new Rect( -halfCoordinates + area.top * lengthCoordinates / height, halfCoordinates - area.right * lengthCoordinates / width,
-					-halfCoordinates + lengthCoordinates * area.bottom / height, halfCoordinates - lengthCoordinates * area.left / width );
+				areasRect = new Rect(
+					-halfCoordinates + area.top * lengthCoordinates / height,
+					halfCoordinates - area.right * lengthCoordinates / width,
+					-halfCoordinates + lengthCoordinates * area.bottom / height,
+					halfCoordinates - lengthCoordinates * area.left / width
+				);
 				break;
 			case 270:
-				areasRect = new Rect( halfCoordinates - area.bottom * lengthCoordinates / height, -halfCoordinates + area.left * lengthCoordinates / width,
-					halfCoordinates - lengthCoordinates * area.top / height, -halfCoordinates + lengthCoordinates * area.right / width );
+				areasRect = new Rect(
+					halfCoordinates - area.bottom * lengthCoordinates / height,
+					-halfCoordinates + area.left * lengthCoordinates / width,
+					halfCoordinates - lengthCoordinates * area.top / height,
+					-halfCoordinates + lengthCoordinates * area.right / width
+				);
 				break;
 			default:
 				throw new IllegalArgumentException();
@@ -392,7 +410,6 @@ public class MainActivity extends Activity {
 				}
 			} );
 	}
-
 
 	// Create and configure data capture service
 	private IDataCaptureService createConfigureDataCaptureService( SampleDataCaptureScenarios scenario )
@@ -459,7 +476,7 @@ public class MainActivity extends Activity {
 		try {
 			engine = Engine.load( this, licenseFileName );
 
-			SampleDataCaptureScenarios selected = SampleDataCaptureScenarios.valueOf( (String)dataCaptureSampleSpinner.getSelectedItem() );
+			SampleDataCaptureScenarios selected = SampleDataCaptureScenarios.valueOf( (String) dataCaptureSampleSpinner.getSelectedItem() );
 			dataCaptureService = createConfigureDataCaptureService( selected );
 			currentScenario = selected;
 
@@ -488,16 +505,19 @@ public class MainActivity extends Activity {
 	{
 		// Do not switch off the screen while data capture service is running
 		previewSurfaceHolder.setKeepScreenOn( true );
-		// Get area of interest (in coordinates of preview frames)
-		Rect areaOfInterest = new Rect( surfaceViewWithOverlay.getAreaOfInterest() );
+		// Clear error message
+		errorTextView.setText( "" );
 
-		SampleDataCaptureScenarios selected = SampleDataCaptureScenarios.valueOf( (String)dataCaptureSampleSpinner.getSelectedItem() );
+		// To select new scenario it is essential to create new DataCaptureService
+		SampleDataCaptureScenarios selected = SampleDataCaptureScenarios.valueOf( (String) dataCaptureSampleSpinner.getSelectedItem() );
 		if( selected != currentScenario ) {
 			dataCaptureService = createConfigureDataCaptureService( selected );
 			currentScenario = selected;
+			configureCameraAndStartPreview( camera );
 		}
-		// Clear error message
-		errorTextView.setText( "" );
+
+		// Get area of interest (in coordinates of preview frames)
+		Rect areaOfInterest = new Rect( surfaceViewWithOverlay.getAreaOfInterest() );
 		// Start the service
 		dataCaptureService.start( cameraPreviewSize.width, cameraPreviewSize.height, orientation, areaOfInterest );
 		// Change the text on the start button to 'Stop'
@@ -581,10 +601,12 @@ public class MainActivity extends Activity {
 		// Configure camera parameters
 		Camera.Parameters parameters = camera.getParameters();
 
-		// Select preview size. The preferred size is 1080x720 or just below this
+		// Select preview size.
+		// The preferred size is 1080x720 or just below this for Text Capture, Custom Data Capture and IBAN capture scenarios
+		// For other Data Capture scenarios the preferred size is maximum available.
 		cameraPreviewSize = null;
 		for( Camera.Size size : parameters.getSupportedPreviewSizes() ) {
-			if( size.height <= 720 || size.width <= 720 ) {
+			if( size.height <= 720 || size.width <= 720 || currentScenario == SampleDataCaptureScenarios.MRZ ) {
 				if( cameraPreviewSize == null ) {
 					cameraPreviewSize = size;
 				} else {
@@ -616,16 +638,32 @@ public class MainActivity extends Activity {
 		// Clear the previous recognition results if any
 		clearRecognitionResults();
 
+		// Width and height of the preview according to the current screen rotation
+		int width = 0;
+		int height = 0;
+		switch( orientation ) {
+			case 0:
+			case 180:
+				width = cameraPreviewSize.width;
+				height = cameraPreviewSize.height;
+				break;
+			case 90:
+			case 270:
+				width = cameraPreviewSize.height;
+				height = cameraPreviewSize.width;
+				break;
+		}
+
 		// Configure the view scale and area of interest (camera sees it as rotated 90 degrees, so
 		// there's some confusion with what is width and what is height)
-		surfaceViewWithOverlay.setScaleX( surfaceViewWithOverlay.getWidth(), cameraPreviewSize.height );
-		surfaceViewWithOverlay.setScaleY( surfaceViewWithOverlay.getHeight(), cameraPreviewSize.width );
+		surfaceViewWithOverlay.setScaleX( surfaceViewWithOverlay.getWidth(), width );
+		surfaceViewWithOverlay.setScaleY( surfaceViewWithOverlay.getHeight(), height );
 		// Area of interest
-		int marginWidth = ( areaOfInterestMargin_PercentOfWidth * cameraPreviewSize.height ) / 100;
-		int marginHeight = ( areaOfInterestMargin_PercentOfHeight * cameraPreviewSize.width ) / 100;
+		int marginWidth = ( areaOfInterestMargin_PercentOfWidth * width ) / 100;
+		int marginHeight = ( areaOfInterestMargin_PercentOfHeight * height ) / 100;
 		surfaceViewWithOverlay.setAreaOfInterest(
-			new Rect( marginWidth, marginHeight, cameraPreviewSize.height - marginWidth,
-				cameraPreviewSize.width - marginHeight ) );
+			new Rect( marginWidth, marginHeight, width - marginWidth,
+				height - marginHeight ) );
 
 		// Start preview
 		camera.startPreview();
@@ -652,11 +690,12 @@ public class MainActivity extends Activity {
 					RelativeLayout.LayoutParams.WRAP_CONTENT );
 				view.setLayoutParams( params );
 
-				return setScenarioUsage( view, position);
+				return setScenarioUsage( view, position );
 			}
 
 			@Override
-			public View getDropDownView(int position, View convertView, ViewGroup parent) {
+			public View getDropDownView( int position, View convertView, ViewGroup parent )
+			{
 				return setScenarioUsage( super.getDropDownView( position, convertView, parent ), position );
 			}
 
@@ -1005,7 +1044,7 @@ public class MainActivity extends Activity {
 						fieldPaint.getTextBounds( label, 0, label.length(), textBounds );
 						canvas.drawText( label, left + 35, top + ( i + 1 ) * 35 + 35, fieldPaint );
 						textPaint.setTextSize( 30 );
-						canvas.drawText( fieldValues[i], left + 35 + textBounds.right,top + ( i + 1 ) * 35 + 35, textPaint );
+						canvas.drawText( fieldValues[i], left + 35 + textBounds.right, top + ( i + 1 ) * 35 + 35, textPaint );
 					}
 				}
 			}
