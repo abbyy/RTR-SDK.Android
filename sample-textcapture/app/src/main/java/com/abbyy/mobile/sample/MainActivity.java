@@ -355,8 +355,12 @@ public class MainActivity extends Activity {
 		}
 
 		focusAreas.add( new Camera.Area( areasRect, 800 ) );
-		parameters.setFocusAreas( focusAreas );
-		parameters.setMeteringAreas( focusAreas );
+		if( parameters.getMaxNumFocusAreas() >= focusAreas.size() ) {
+			parameters.setFocusAreas( focusAreas );
+		}
+		if( parameters.getMaxNumMeteringAreas() >= focusAreas.size() ) {
+			parameters.setMeteringAreas( focusAreas );
+		}
 
 		parameters.setFocusMode( mode );
 
