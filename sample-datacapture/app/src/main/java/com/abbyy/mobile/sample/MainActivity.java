@@ -393,12 +393,18 @@ public class MainActivity extends Activity {
 	{
 		if( camera != null ) {
 			camera.setPreviewCallbackWithBuffer( null );
-			if( inPreview ) {
-				camera.stopPreview();
-				inPreview = false;
-			}
+			stopPreview();
 			camera.release();
 			camera = null;
+		}
+	}
+
+	// Stop preview if it is running
+	private void stopPreview()
+	{
+		if( inPreview ) {
+			camera.stopPreview();
+			inPreview = false;
 		}
 	}
 
@@ -601,6 +607,9 @@ public class MainActivity extends Activity {
 
 	private void configureCameraAndStartPreview( Camera camera )
 	{
+		// Setting camera parameters when preview is running can cause crashes on some android devices
+		stopPreview();
+
 		// Configure camera orientation. This is needed for both correct preview orientation
 		// and recognition
 		orientation = getCameraOrientation();
