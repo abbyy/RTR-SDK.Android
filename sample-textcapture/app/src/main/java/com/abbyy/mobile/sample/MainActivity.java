@@ -4,11 +4,15 @@
 package com.abbyy.mobile.sample;
 
 import android.app.Activity;
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -34,8 +38,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.abbyy.mobile.rtr.Engine;
-import com.abbyy.mobile.rtr.ITextCaptureService;
 import com.abbyy.mobile.rtr.Language;
+import com.abbyy.mobile.rtr.ITextCaptureService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +47,7 @@ import java.util.List;
 public class MainActivity extends Activity {
 
 	// Licensing
-	private static final String licenseFileName = "AbbyyRtrSdk.license";
+	private static final String licenseFileName = "license";
 
 	///////////////////////////////////////////////////////////////////////////////
 	// Some application settings that can be changed to modify application behavior:
@@ -71,9 +75,12 @@ public class MainActivity extends Activity {
 		Language.Polish,
 		Language.PortugueseBrazilian,
 		Language.Russian,
-		Language.Spanish,
+		Language.Spanish
 	};
 	///////////////////////////////////////////////////////////////////////////////
+
+	// Camera permission request code for Android 6.0 and higher
+	private static final int CAMERA_PERMISSION_REQUEST_CODE = 42;
 
 	// The 'Abbyy RTR SDK Engine' and 'Text Capture Service' to be used in this sample application
 	private Engine engine;
@@ -93,6 +100,7 @@ public class MainActivity extends Activity {
 	private boolean stableResultHasBeenReached; // Stable result has been reached
 	private boolean startRecognitionWhenReady; // Start recognition next time when ready (and reset this flag)
 	private Handler handler = new Handler(); // Posting some delayed actions;
+	private boolean cameraPermissionRequested = false; // Camera permission request has been sent to user (Android 6+)
 
 	// UI components
 	private Button startButton; // The start button
@@ -232,7 +240,7 @@ public class MainActivity extends Activity {
 		}
 	};
 
-	// Enable 'Start' button and switching to continuous focus mode (if possible) when autofocus completes 
+	// Enable 'Start' button and switching to continuous focus mode (if possible) when autofocus completes
 	private Camera.AutoFocusCallback finishCameraInitialisationAutoFocusCallback = new Camera.AutoFocusCallback() {
 		@Override
 		public void onAutoFocus( boolean success, Camera camera )
@@ -699,6 +707,25 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	// Camera permission request handler for Android 6.0 and higher
+	@Override
+	public void onRequestPermissionsResult( int requestCode, String[] permissions, int[] grantResults )
+	{
+		switch( requestCode ) {
+			case CAMERA_PERMISSION_REQUEST_CODE:
+				if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
+					if( camera == null ) {
+						camera = Camera.open();
+					}
+				} else {
+					showStartupError( "Camera is essential for this application." );
+				}
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
+	}
+
 	@Override
 	public void onCreate( Bundle savedInstanceState )
 	{
@@ -744,8 +771,19 @@ public class MainActivity extends Activity {
 		startButton.setEnabled( false );
 		clearRecognitionResults();
 		startRecognitionWhenReady = startRecognitionOnAppStart;
-		camera = Camera.open();
-		if( previewSurfaceHolder != null ) {
+
+		if( ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA ) == PackageManager.PERMISSION_GRANTED ) {
+			if( camera == null ) {
+				camera = Camera.open();
+			}
+		} else {
+			if( !cameraPermissionRequested ) {
+				ActivityCompat.requestPermissions( this, new String[] { Manifest.permission.CAMERA }, CAMERA_PERMISSION_REQUEST_CODE );
+			}
+			// After permission dialog is dismissed, onResume will be invoked again
+			cameraPermissionRequested = true;
+		}
+		if( previewSurfaceHolder != null && camera != null ) {
 			setCameraPreviewDisplayAndStartPreview();
 		}
 	}
