@@ -4,11 +4,15 @@
 package com.abbyy.mobile.sample;
 
 import android.app.Activity;
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.graphics.ImageFormat;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -44,7 +48,7 @@ import java.util.List;
 public class MainActivity extends Activity {
 
 	// Licensing
-	private static final String licenseFileName = "AbbyyRtrSdk.license";
+	private static final String licenseFileName = "license";
 
 	///////////////////////////////////////////////////////////////////////////////
 	// Some application settings that can be changed to modify application behavior:
@@ -81,6 +85,9 @@ public class MainActivity extends Activity {
 	private SampleDataCaptureScenarios currentScenario;
 	///////////////////////////////////////////////////////////////////////////////
 
+	// Camera permission request code for Android 6.0 and higher
+	private static final int CAMERA_PERMISSION_REQUEST_CODE = 42;
+
 	// The 'Abbyy RTR SDK Engine' and 'Data Capture Service' to be used in this sample application
 	private Engine engine;
 	private IDataCaptureService dataCaptureService;
@@ -99,6 +106,7 @@ public class MainActivity extends Activity {
 	private boolean stableResultHasBeenReached; // Stable result has been reached
 	private boolean startRecognitionWhenReady; // Start recognition next time when ready (and reset this flag)
 	private Handler handler = new Handler(); // Posting some delayed actions;
+	private boolean cameraPermissionRequested = false; // Camera permission request has been sent to user (Android 6+)
 
 	// UI components
 	private Button startButton; // The start button
@@ -458,7 +466,7 @@ public class MainActivity extends Activity {
 					field.setRegEx( "\\([0-9]+\\)" );
 					break;
 				case ChineseJapaneseDate:
-					// Chinese or Japanese date in traditional form (2017年1月19日, 925年12月31日, 1900年07月29日, 2008年8月8日)
+					// Chinese or Japanese date in traditional form (2017年1月19日, 1925年12月31日, 1900年07月29日, 2008年8月8日)
 					profileBuilder.setRecognitionLanguage( Language.ChineseSimplified );
 					field.setRegEx( "[12][0-9]{3}年\\w*((0?[1-9])|(1[0-2]))月\\w*(([01]?[0-9])|(3[01]))日" );
 					break;
@@ -788,6 +796,25 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	// Camera permission request handler for Android 6.0 and higher
+	@Override
+	public void onRequestPermissionsResult( int requestCode, String[] permissions, int[] grantResults )
+	{
+		switch( requestCode ) {
+			case CAMERA_PERMISSION_REQUEST_CODE:
+				if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
+					if( camera == null ) {
+						camera = Camera.open();
+					}
+				} else {
+					showStartupError( "Camera is essential for this application." );
+				}
+				break;
+			default:
+				throw new IllegalArgumentException();
+		}
+	}
+
 	@Override
 	public void onCreate( Bundle savedInstanceState )
 	{
@@ -834,8 +861,19 @@ public class MainActivity extends Activity {
 		startButton.setEnabled( false );
 		clearRecognitionResults();
 		startRecognitionWhenReady = startRecognitionOnAppStart;
-		camera = Camera.open();
-		if( previewSurfaceHolder != null ) {
+
+		if( ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA ) == PackageManager.PERMISSION_GRANTED ) {
+			if( camera == null ) {
+				camera = Camera.open();
+			}
+		} else {
+			if( !cameraPermissionRequested ) {
+				ActivityCompat.requestPermissions( this, new String[] { Manifest.permission.CAMERA }, CAMERA_PERMISSION_REQUEST_CODE );
+			}
+			// After permission dialog is dismissed, onResume will be invoked again
+			cameraPermissionRequested = true;
+		}
+		if( previewSurfaceHolder != null && camera != null ) {
 			setCameraPreviewDisplayAndStartPreview();
 		}
 	}
