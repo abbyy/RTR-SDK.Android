@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Core API\n(RTR SDK)</string>
+    <string name="recognize_image">Open and recognize image</string>
+    <string name="error_loading_engine">Error loading engine: %s</string>
+    <string name="init_recognition_text">Please, select an image</string>
+    <string name="no_permission_text">You have to grant permission to read files.</string>
+</resources>
