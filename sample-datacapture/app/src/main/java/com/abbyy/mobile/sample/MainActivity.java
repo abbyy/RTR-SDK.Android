@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.content.pm.PackageManager;
+import android.graphics.Matrix;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.graphics.ImageFormat;
@@ -25,6 +26,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -33,9 +35,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.abbyy.mobile.rtr.Engine;
 import com.abbyy.mobile.rtr.IDataCaptureProfileBuilder;
@@ -72,7 +76,8 @@ public class MainActivity extends Activity {
 		ChineseJapaneseDate( "2008年8月8日" ),
 		// Some built-in data capture scenarios (the list is incomplete)
 		IBAN( "International Bank Account Number (DE, ES, FR, GB)" ),
-		MRZ( "Machine Readable Zone in identity documents" );
+		MRZ( "Machine Readable Zone in identity documents" ),
+		BusinessCards( "Business cards (english)" );
 
 		private SampleDataCaptureScenarios( String usage )
 		{
@@ -94,8 +99,10 @@ public class MainActivity extends Activity {
 
 	// The camera and the preview surface
 	private Camera camera;
+	private Camera.CameraInfo cameraInfo;
 	private SurfaceViewWithOverlay surfaceViewWithOverlay;
 	private SurfaceHolder previewSurfaceHolder;
+	private boolean isBackFacingCamera = true;
 
 	// Actual preview size and orientation
 	private Camera.Size cameraPreviewSize;
@@ -110,6 +117,7 @@ public class MainActivity extends Activity {
 
 	// UI components
 	private Button startButton; // The start button
+	private ImageButton cameraSwitchButton;
 	private TextView warningTextView; // Show warnings from recognizer
 	private TextView errorTextView; // Show errors from recognizer
 	private Spinner dataCaptureSampleSpinner; // Data capture scenario selection
@@ -540,8 +548,14 @@ public class MainActivity extends Activity {
 
 		// Get area of interest (in coordinates of preview frames)
 		Rect areaOfInterest = new Rect( surfaceViewWithOverlay.getAreaOfInterest() );
+
+		int frameOrientation = orientation;
+		// Fix frame orientation in case of front facing camera
+		if( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT && orientation == 90 ) {
+			frameOrientation = 270;
+		}
 		// Start the service
-		dataCaptureService.start( cameraPreviewSize.width, cameraPreviewSize.height, orientation, areaOfInterest );
+		dataCaptureService.start( cameraPreviewSize.width, cameraPreviewSize.height, frameOrientation, areaOfInterest );
 		// Change the text on the start button to 'Stop'
 		startButton.setText( BUTTON_TEXT_STOP );
 		startButton.setEnabled( true );
@@ -602,15 +616,14 @@ public class MainActivity extends Activity {
 				orientation = 270;
 				break;
 		}
-		for( int i = 0; i < Camera.getNumberOfCameras(); i++ ) {
-			Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-			Camera.getCameraInfo( i, cameraInfo );
-			if( cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK ) {
-				return ( cameraInfo.orientation - orientation + 360 ) % 360;
-			}
+
+		if( isBackFacingCamera ) {
+			return ( cameraInfo.orientation - orientation + 360 ) % 360;
 		}
-		// If Camera.open() succeed, this point of code never reached
-		return -1;
+		else {
+			int result = ( cameraInfo.orientation + orientation ) % 360;
+			return ( 360 - result ) % 360;
+		}
 	}
 
 	private void configureCameraAndStartPreview( Camera camera )
@@ -683,6 +696,7 @@ public class MainActivity extends Activity {
 		// there's some confusion with what is width and what is height)
 		surfaceViewWithOverlay.setScaleX( surfaceViewWithOverlay.getWidth(), width );
 		surfaceViewWithOverlay.setScaleY( surfaceViewWithOverlay.getHeight(), height );
+		surfaceViewWithOverlay.setIsMirrored( !isBackFacingCamera );
 		// Area of interest
 		int marginWidth = ( areaOfInterestMargin_PercentOfWidth * width ) / 100;
 		int marginHeight = ( areaOfInterestMargin_PercentOfHeight * height ) / 100;
@@ -697,6 +711,22 @@ public class MainActivity extends Activity {
 		autoFocus( finishCameraInitialisationAutoFocusCallback );
 
 		inPreview = true;
+	}
+
+	private Camera openCamera()
+	{
+		for( int i = 0; i < Camera.getNumberOfCameras(); ++i ) {
+			cameraInfo = new Camera.CameraInfo();
+			Camera.getCameraInfo( i, cameraInfo );
+			if( cameraInfo.facing == ( isBackFacingCamera ? Camera.CameraInfo.CAMERA_FACING_BACK : Camera.CameraInfo.CAMERA_FACING_FRONT ) ) {
+				try {
+					return Camera.open( i );
+				} catch( RuntimeException e ) {
+					Log.e( getString( R.string.app_name ), "Camera failed to open: " + e.getLocalizedMessage() );
+				}
+			}
+		}
+		return null;
 	}
 
 	// Initialize recognition language spinner in the UI with available languages
@@ -796,6 +826,37 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	// 'Switch camera' button
+	public void onSwitchCameraButtonClick( View view )
+	{
+		// stop recognition
+		if( startButton.getText().equals( BUTTON_TEXT_STOP ) ) {
+			stopRecognition();
+			clearRecognitionResults();
+		}
+		isBackFacingCamera = !isBackFacingCamera;
+
+		stopPreviewAndReleaseCamera();
+
+		camera = openCamera();
+
+		// check autofocus on camera
+		Camera.Parameters parameters = camera.getParameters();
+		List<String> focusModes = parameters.getSupportedFocusModes();
+		if( !focusModes.contains( Camera.Parameters.FOCUS_MODE_AUTO ) ) {
+			String message = String.format( "Autofocus is not supported by the %s facing camera!", isBackFacingCamera ? "back" : "front" );
+			Toast toast = Toast.makeText( getApplicationContext(), message, Toast.LENGTH_SHORT );
+			toast.setGravity( Gravity.CENTER, 0, 0 );
+			toast.show();
+			camera.release();
+			isBackFacingCamera = !isBackFacingCamera;
+			camera = openCamera();
+		}
+
+		startRecognitionWhenReady = startRecognitionOnAppStart;
+		setCameraPreviewDisplayAndStartPreview();
+	}
+
 	// Camera permission request handler for Android 6.0 and higher
 	@Override
 	public void onRequestPermissionsResult( int requestCode, String[] permissions, int[] grantResults )
@@ -804,7 +865,7 @@ public class MainActivity extends Activity {
 			case CAMERA_PERMISSION_REQUEST_CODE:
 				if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
 					if( camera == null ) {
-						camera = Camera.open();
+						camera = openCamera();
 					}
 				} else {
 					showStartupError( "Camera is essential for this application." );
@@ -825,6 +886,7 @@ public class MainActivity extends Activity {
 		warningTextView = (TextView) findViewById( R.id.warningText );
 		errorTextView = (TextView) findViewById( R.id.errorText );
 		startButton = (Button) findViewById( R.id.startButton );
+		cameraSwitchButton = (ImageButton) findViewById( R.id.switchCameraButton );
 		dataCaptureSampleSpinner = (Spinner) findViewById( R.id.dataCaptureSampleSpinner );
 
 		// Initialize the recognition language spinner
@@ -864,7 +926,7 @@ public class MainActivity extends Activity {
 
 		if( ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA ) == PackageManager.PERMISSION_GRANTED ) {
 			if( camera == null ) {
-				camera = Camera.open();
+				camera = openCamera();
 			}
 		} else {
 			if( !cameraPermissionRequested ) {
@@ -911,10 +973,13 @@ public class MainActivity extends Activity {
 		private Paint lineBoundariesPaint;
 		private Paint backgroundPaint;
 		private Paint areaOfInterestPaint;
+		private boolean isMirrored = false;
 
 		// Preallocated objects, used in drawing
 		Rect textBounds = new Rect();
 		Path path = new Path();
+		Matrix matrix = new Matrix();
+		float[] coords = new float[2];
 
 		public SurfaceViewWithOverlay( Context context )
 		{
@@ -968,6 +1033,14 @@ public class MainActivity extends Activity {
 			return areaOfInterest;
 		}
 
+		public void setIsMirrored( boolean isMirrored )
+		{
+			if( isMirrored ) {
+				matrix.setScale( -1, 1, getWidth() / 2, getHeight() / 2 );
+			}
+			this.isMirrored = isMirrored;
+		}
+
 		public void setLines( IDataCaptureService.DataField fields[],
 			IDataCaptureService.ResultStabilityStatus resultStatus )
 		{
@@ -980,7 +1053,7 @@ public class MainActivity extends Activity {
 					fieldNames[i] = fields[i].Name;
 					Point[] srcQuad = fields[i].Quadrangle;
 					for( int j = 0; j < 4; j++ ) {
-						fieldsQuads[i * 4 + j] = ( srcQuad != null ? transformPoint( srcQuad[j] ) : null );
+						fieldsQuads[i * 4 + j] = ( srcQuad != null ? transformPoint( srcQuad[isMirrored ? 3 - j : j] ) : null );
 					}
 				}
 
@@ -988,10 +1061,10 @@ public class MainActivity extends Activity {
 				this.fieldValues = new String[count];
 				int index = 0;
 				for( IDataCaptureService.DataField field : fields ) {
-					for( IDataCaptureService.TextLine component : field.Components ) {
+					for( IDataCaptureService.DataField component : field.Components ) {
 						Point[] srcQuad = component.Quadrangle;
 						for( int j = 0; j < 4; j++ ) {
-							this.quads[4 * index + j] = ( srcQuad != null ? transformPoint( srcQuad[j] ) : null );
+							this.quads[4 * index + j] = ( srcQuad != null ? transformPoint( srcQuad[isMirrored ? 3 - j : j] ) : null );
 						}
 						this.fieldValues[index] = component.Text;
 						index++;
@@ -1032,10 +1105,17 @@ public class MainActivity extends Activity {
 		// Transforms point to canvas coordinates
 		private Point transformPoint( Point point )
 		{
-			return new Point(
+			Point result = new Point(
 				( scaleNominatorX * point.x ) / scaleDenominatorX,
 				( scaleNominatorY * point.y ) / scaleDenominatorY
 			);
+			if( isMirrored ) {
+				coords[0] = result.x;
+				coords[1] = result.y;
+				matrix.mapPoints( coords );
+				result.set( (int) coords[0], (int) coords[1] );
+			}
+			return result;
 		}
 
 		@Override
