@@ -1,13 +1,13 @@
 
-# Samples for ABBYY RTR SDK for Android
+# Samples for ABBYY Mobile Capture for Android
 
-This folder contains code samples for [ABBYY Real-Time Recognition SDK](http://rtrsdk.com/) for Android.
+This folder contains code samples for ABBYY Mobile Capture for Android.
 
 
 
-## About ABBYY RTR SDK
+## About ABBYY Mobile Capture
 
-ABBYY Real-Time Recognition SDK provides technology for recognizing text directly on the smartphone's camera preview screen. Snapping a picture is not required.
+Mobile Capture is a Software Development Kit (SDK), which allows automatic capture of an image, by simply pointing the camera on the docmunent, for further back end processes or recognition of the data from the document in real time on the mobile device requiring minimal interaction from the user.
 
 The samples cover the following scenarios:
 
@@ -19,13 +19,17 @@ The samples cover the following scenarios:
 
   Custom data field capture: only the data that matches the specified regular expression will be extracted.
 
+- Core API (**sample-coreapi**)
 
+  The sample demonstrates the core API usage in a simple scenario of capturing data from an image.
+
+- Image Capture (**sample-imagecapture**)
+
+  This simple image capture scenario demonstrates how to automatically capture an image from the smartphone video preview frames.
 
 ## Prerequisites
 
-To try out the real-time OCR technology using these samples, first download the library from [our site](http://rtrsdk.com/).
-
-The library is free: a fully-functional version for up to 5000 app downloads via Google Play.
+To try out the real-time OCR technology using these samples, request ABBYY Mobile Capture trial version on the [ABBYY website](http://www.abbyy.com/mobile-capture-sdk/#request-demo). 
 
 In the download package you will find:
 
@@ -33,9 +37,8 @@ In the download package you will find:
 - resource files:
   - **assets/dictionaries** — dictionary support for some of the recognition languages; using a dictionary improves the result quality
   - **assets/patterns** — recognition databases
-- **License** — your license file and license agreement
 
-**Note:** You are **not allowed** to include assets or license in any branch of this sample in public repositories. This notice must be included in all public branches. Anyone wishing to try out the samples should download their own copy of the library from the above link and use the license and assets from that copy.
+**Note:** You are **not allowed** to include assets or license in any branch of this sample in public repositories. This notice must be included in all public branches. Anyone wishing to try out the samples should request their own copy of the library from the above link and use the assets from that copy.
 
 
 
@@ -44,9 +47,3 @@ In the download package you will find:
 Please change the application ID before building, modifying or otherwise using any of the samples.
 
 The samples should be open and built from the same folder where they are located in the distribution package. All samples work out of the box.
-
-
-
-## See also
-
-You can find the full ABBYY Real-Time Recognition SDK documentation [here](http://rtrsdk.com/documentation).
