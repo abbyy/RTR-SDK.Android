@@ -1,0 +1,19 @@
+<resources>
+
+    <style name="CameraStyle" parent="Theme.AppCompat.NoActionBar" >
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="AlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColorPrimary">@color/foregroundColor</item>
+        <item name="android:background">@color/backgroundColor</item>
+    </style>
+
+    <style name="TextButtonStyle">
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+</resources>

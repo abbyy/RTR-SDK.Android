@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="corners_radius">4dp</dimen>
+    <dimen name="thumbnail_padding">2dp</dimen>
+    <dimen name="thumbnail_margin">4dp</dimen>
+    <dimen name="thumbnail_size">100dp</dimen>
+</resources>

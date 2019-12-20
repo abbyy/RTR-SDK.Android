@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="backgroundColor">#f5f8f8f8</color>
+    <color name="foregroundColor">#424650</color>
+    <color name="borderColor">#1e000000</color>
+    <color name="colorAccent">#c60c30</color>
+    <color name="colorGray">#80000000</color>
+    <color name="deletePageBackground">#33424650</color>
+</resources>
