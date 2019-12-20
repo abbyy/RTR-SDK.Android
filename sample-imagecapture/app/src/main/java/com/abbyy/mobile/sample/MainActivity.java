@@ -68,26 +68,28 @@ public class MainActivity extends Activity {
 	// A set of available sample document sizes
 	private enum SampleDocumentSize {
 		// Unknown size but require boundaries
-		DocumentWithBoundaries( "Unknown size / Require boundaries", Float.MAX_VALUE, Float.MAX_VALUE ),
+		DocumentWithBoundaries( "Unknown size / Require boundaries", 0f, 0f, 1f ),
 		// A4 paper size for office documents (ISO)
-		A4( "210×297 mm (ISO A4)", 210f, 297f ),
+		A4( "210×297 mm (ISO A4)", 210f, 297f, 0f ),
 		// Letter paper size for office documents (US Letter)
-		Letter( "215.9×279.4 mm (US Letter)", 215.9f, 279.4f ),
+		Letter( "215.9×279.4 mm (US Letter)", 215.9f, 279.4f, 0f ),
 		// International Business Card
-		BusinessCard( "53.98×85.6 mm (International)", 53.98f, 85.6f ),
+		BusinessCard( "53.98×85.6 mm (International)", 53.98f, 85.6f, 0f ),
 		// Unknown size / Unknown boundaries
-		Auto( "Unknown size / Unknown boundaries", 0, 0 );
+		Auto( "Unknown size / Unknown boundaries", 0f, 0f, 0f );
 
-		SampleDocumentSize( String usage, float width, float height )
+		SampleDocumentSize( String usage, float width, float height, float minAspectRatio )
 		{
 			Usage = usage;
 			Width = width;
 			Height = height;
+			MinAspectRatio = minAspectRatio;
 		}
 
 		public String Usage;
 		public float Width;
 		public float Height;
+		public float MinAspectRatio;
 	}
 	// By default the document size is unknown
 	private SampleDocumentSize documentSize = SampleDocumentSize.DocumentWithBoundaries;
@@ -117,7 +119,7 @@ public class MainActivity extends Activity {
 	private boolean cameraPermissionRequested = false; // Camera permission request has been sent to user (Android 6+)
 	private boolean imageCaptured = false;
 	private int skipFramesAfterAutofocus = 0; // We will skip some  frames after autofocus (user tapped the screen)
-	// to allow the service to catch frames at the new focus.
+		// to allow the service to catch frames at the new focus.
 
 	// UI components
 	private Button startButton; // The start button
@@ -155,11 +157,8 @@ public class MainActivity extends Activity {
 							if( result.DocumentBoundary != null ) {
 								IImagingCoreAPI.CropOperation crop = coreAPI.createCropOperation();
 								crop.DocumentBoundary = result.DocumentBoundary;
-								if( result.DocumentWidth != Float.MAX_VALUE && result.DocumentHeight != Float.MAX_VALUE ) {
-									// Document with known size
-									crop.DocumentWidth = result.DocumentWidth;
-									crop.DocumentHeight = result.DocumentHeight;
-								}
+								crop.DocumentWidth = result.DocumentWidth;
+								crop.DocumentHeight = result.DocumentHeight;
 								crop.apply( image );
 							}
 							// The cropped image will be shown with a boundary drawn around the image
@@ -486,6 +485,7 @@ public class MainActivity extends Activity {
 			engine = Engine.load( this, licenseFileName );
 			imageCaptureService = engine.createImageCaptureService( imageCaptureCallback );
 			imageCaptureService.setDocumentSize( documentSize.Width, documentSize.Height );
+			imageCaptureService.setAspectRatioMin( documentSize.MinAspectRatio );
 
 			return true;
 		} catch( java.io.IOException e ) {
