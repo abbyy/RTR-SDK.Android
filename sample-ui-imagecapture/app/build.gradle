@@ -1,0 +1,42 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.abbyy.rtr.ui.sample.imagecapture"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            // In your application you can copy all files to the standard assets folder 
+            assets.srcDirs += ['../../assets', '../../License']
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:design:28.0.0'
+
+    implementation(name: 'abbyy-mi-sdk-2.0', ext: 'aar')
+    // This is a dependency on abbyy-ui-1.0.
+    implementation(name: 'abbyy-ui-1.0', ext: 'aar')
+    // Unfortunately new version of android gradle plugin doesn't resolve it automatically.
+    // You don't have to write code in Kotlin. This is just a workaround.
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.31"
+
+}
