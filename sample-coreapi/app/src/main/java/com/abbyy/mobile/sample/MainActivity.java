@@ -9,7 +9,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -28,8 +28,9 @@ import com.abbyy.mobile.rtr.IRecognitionCoreAPI;
 import com.abbyy.mobile.rtr.IDataCaptureCoreAPI;
 import com.abbyy.mobile.rtr.Language;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,18 +48,18 @@ public class MainActivity extends AppCompatActivity {
 	// To show all languages in the UI you can substitute the list below with:
 	// Language[] languages = Language.values();
 	private Language[] languages = {
-		Language.ChineseSimplified,
-		Language.ChineseTraditional,
-		Language.English,
-		Language.French,
-		Language.German,
-		Language.Italian,
-		Language.Japanese,
-		Language.Korean,
-		Language.Polish,
-		Language.PortugueseBrazilian,
-		Language.Russian,
-		Language.Spanish,
+			Language.ChineseSimplified,
+			Language.ChineseTraditional,
+			Language.English,
+			Language.French,
+			Language.German,
+			Language.Italian,
+			Language.Japanese,
+			Language.Korean,
+			Language.Polish,
+			Language.PortugueseBrazilian,
+			Language.Russian,
+			Language.Spanish,
 	};
 
 	// Type of image content
@@ -96,13 +97,13 @@ public class MainActivity extends AppCompatActivity {
 		recognizedTextView = findViewById( R.id.recognized_text );
 		recognizedTextView.setMovementMethod( new ScrollingMovementMethod() );
 
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>( this, android.R.layout.simple_spinner_item );
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item );
 		adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item );
 
 		// Initialize language spinner
 		final Spinner languagesSpinner = (Spinner) findViewById( R.id.languages );
-		for( Language language : languages ) {
-			String name = language.name();
+		for( int i = 0; i < languages.length; i++ ) {
+			String name = languages[i].name();
 			adapter.add( name );
 		}
 		languagesSpinner.setAdapter( adapter );
@@ -126,9 +127,9 @@ public class MainActivity extends AppCompatActivity {
 
 		// Initialize content type spinner
 		final Spinner contentTypesSpinner = (Spinner) findViewById( R.id.contentTypes );
-		adapter = new ArrayAdapter<String>( this, android.R.layout.simple_spinner_item );
+		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item );
 		adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item );
-		for( ContentType type : ContentType.values() ) {
+		for( ContentType type: ContentType.values() ) {
 			adapter.add( type.toString() );
 		}
 		contentTypesSpinner.setAdapter( adapter );
@@ -191,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override
-	public void onRequestPermissionsResult( int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults )
+	public void onRequestPermissionsResult( int requestCode, String permissions[], int[] grantResults )
 	{
 		if( requestCode == READ_EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE ) {
 			if( grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED ) {
@@ -222,6 +223,8 @@ public class MainActivity extends AppCompatActivity {
 		intent.setType( "image/*" );
 		startActivityForResult( intent, OPEN_FILE_REQUEST_CODE );
 	}
+
+
 
 	// Async task for recognition or data extraction process
 	// The recognition (data extraction) is not fast process that's why it have to be background
@@ -308,24 +311,25 @@ public class MainActivity extends AppCompatActivity {
 		protected String doInBackground( Void... params )
 		{
 			// The 'Abbyy RTR SDK Core API' object to be used in this sample application
-			IRecognitionCoreAPI recognitionCoreAPI = engine.createRecognitionCoreAPI();
+			try( IRecognitionCoreAPI recognitionCoreAPI = engine.createRecognitionCoreAPI() ) {
 
-			// Here you can configure the recognition languages and the area of interest
-			recognitionCoreAPI.getTextRecognitionSettings().setRecognitionLanguage( recognitionLanguage );
-			IRecognitionCoreAPI.TextBlock[] blocks = recognitionCoreAPI.recognizeText( image, callback );
-			// Combing lines to string is complex process.
-			// You may write another realisation
-			StringBuilder resultText = new StringBuilder();
-			for( int i = 0; i < blocks.length; i++ ) {
-				for( int j = 0; j < blocks[i].TextLines.length; j++ ) {
-					if( j > 0 ) {
-						resultText.append( ' ' );
+				// Here you can configure the recognition languages and the area of interest
+				recognitionCoreAPI.getTextRecognitionSettings().setRecognitionLanguage( recognitionLanguage );
+				IRecognitionCoreAPI.TextBlock[] blocks = recognitionCoreAPI.recognizeText( image, callback );
+				// Combing lines to string is complex process.
+				// You may write another realisation
+				StringBuilder resultText = new StringBuilder();
+				for( int i = 0; i < blocks.length; i++ ) {
+					for( int j = 0; j < blocks[i].TextLines.length; j++ ) {
+						if( j > 0 ) {
+							resultText.append( ' ' );
+						}
+						resultText.append( blocks[i].TextLines[j].Text );
 					}
-					resultText.append( blocks[i].TextLines[j].Text );
+					resultText.append( System.lineSeparator() );
 				}
-				resultText.append( System.lineSeparator() );
+				return resultText.toString();
 			}
-			return resultText.toString();
 		}
 	}
 
@@ -379,26 +383,35 @@ public class MainActivity extends AppCompatActivity {
 		protected String doInBackground( Void... params )
 		{
 			// The 'Abbyy RTR SDK Core API' object to be used in this sample application
-			IDataCaptureCoreAPI dataCaptureCoreAPI = engine.createDataCaptureCoreAPI();
-			// Set recognition language
-			dataCaptureCoreAPI.getDataCaptureSettings().setRecognitionLanguage( recognitionLanguage );
-			// Set profile (for example "BusinessCards")
-			dataCaptureCoreAPI.getDataCaptureSettings().setProfile( "BusinessCards" );
-			// Do it!
-			IDataCaptureCoreAPI.DataField[] dataFields = dataCaptureCoreAPI.extractDataFromImage( image, callback );
-			// Write result to string
-			StringBuilder resultText = new StringBuilder();
-			for( IDataCaptureCoreAPI.DataField dataField : dataFields ) {
-				resultText.append( dataField.Name ).append( ": " ).append( dataField.Text );
-				resultText.append( System.lineSeparator() );
-				for( IDataCaptureCoreAPI.DataField component : dataField.Components ) {
-					if( !Objects.equals( component.Name, "" ) ) {
-						resultText.append( "\t\t" ).append( component.Name ).append( ": " ).append( component.Text );
-						resultText.append( System.lineSeparator() );
+			try( IDataCaptureCoreAPI dataCaptureCoreAPI = engine.createDataCaptureCoreAPI() ) {
+				// Set recognition language
+				dataCaptureCoreAPI.getDataCaptureSettings().setRecognitionLanguage( recognitionLanguage );
+				// Set profile (for example "BusinessCards")
+				dataCaptureCoreAPI.getDataCaptureSettings().setProfile( "BusinessCards" );
+				// Do it!
+				IDataCaptureCoreAPI.DataField[] dataFields = dataCaptureCoreAPI.extractDataFromImage( image, callback );
+				// Write result to string
+				StringBuilder resultText = new StringBuilder();
+				for( int i = 0; i < dataFields.length; i++ ) {
+					resultText.append( dataFields[i].Name + ": " + dataFields[i].Text );
+					resultText.append( System.lineSeparator() );
+					IDataCaptureCoreAPI.DataField field = dataFields[i];
+					if( field.Components != null ) {
+						for( IDataCaptureCoreAPI.DataField component : field.Components ) {
+							if( component.Name != null ) {
+								resultText.append( "\t\t" + component.Name + ": " + component.Text );
+								resultText.append( System.lineSeparator() );
+							}
+						}
+					} else {
+						if( field.Name != null ) {
+							resultText.append( "\t\t" + field.Name + ": " + field.Text );
+							resultText.append( System.lineSeparator() );
+						}
 					}
 				}
+				return resultText.toString();
 			}
-			return resultText.toString();
 		}
 	}
 }
