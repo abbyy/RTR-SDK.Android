@@ -1049,7 +1049,8 @@ public class MainActivity extends Activity {
 				fieldsQuads = new Point[fields.length * 4];
 				fieldNames = new String[fields.length];
 				for( int i = 0; i < fields.length; i++ ) {
-					count += fields[i].Components.length;
+					IDataCaptureService.DataField[] components = fields[i].Components;
+					count += components != null ? components.length : 1;
 					fieldNames[i] = fields[i].Name;
 					Point[] srcQuad = fields[i].Quadrangle;
 					for( int j = 0; j < 4; j++ ) {
@@ -1061,14 +1062,24 @@ public class MainActivity extends Activity {
 				this.fieldValues = new String[count];
 				int index = 0;
 				for( IDataCaptureService.DataField field : fields ) {
-					for( IDataCaptureService.DataField component : field.Components ) {
-						Point[] srcQuad = component.Quadrangle;
-						for( int j = 0; j < 4; j++ ) {
-							this.quads[4 * index + j] = ( srcQuad != null ? transformPoint( srcQuad[isMirrored ? 3 - j : j] ) : null );
-						}
-						this.fieldValues[index] = component.Text;
-						index++;
-					}
+                    IDataCaptureService.DataField[] components = field.Components;
+                    if( components != null ) {
+                        for( IDataCaptureService.DataField component : field.Components ) {
+                            Point[] srcQuad = component.Quadrangle;
+                            for( int j = 0; j < 4; j++ ) {
+                                this.quads[4 * index + j] = ( srcQuad != null ? transformPoint( srcQuad[isMirrored ? 3 - j : j] ) : null );
+                            }
+                            this.fieldValues[index] = component.Text;
+                            index++;
+                        }
+                    } else {
+                        Point[] srcQuad = field.Quadrangle;
+                        for( int j = 0; j < 4; j++ ) {
+                            this.quads[4 * index + j] = ( srcQuad != null ? transformPoint( srcQuad[isMirrored ? 3 - j : j] ) : null );
+                        }
+                        this.fieldValues[index] = field.Text;
+                        index++;
+                    }
 				}
 
 				switch( resultStatus ) {
