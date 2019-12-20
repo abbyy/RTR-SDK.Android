@@ -210,14 +210,9 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	// Loads image
-	private Bitmap getPicture( Uri selectedImage )
+	private Bitmap getPicture( Uri selectedImage ) throws IOException
 	{
-		String[] filePathColumn = { MediaStore.Images.Media.DATA };
-		try( Cursor cursor = getContentResolver().query( selectedImage, filePathColumn, null, null, null ) ) {
-			cursor.moveToFirst();
-			String picturePath = cursor.getString( cursor.getColumnIndex( filePathColumn[0] ) );
-			return BitmapFactory.decodeFile( picturePath );
-		}
+		return MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
 	}
 
 	// Opens file pick dialog
