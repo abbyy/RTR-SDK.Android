@@ -19,7 +19,7 @@ android {
 
     sourceSets {
         main {
-            // In your application you might want to copy all files in the standard assets folder
+            // In your application you might want to copy all files to the standard assets folder
             assets.srcDirs += ['../../assets', '../../License']
         }
     }
