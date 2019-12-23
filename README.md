@@ -23,9 +23,17 @@ The samples cover the following scenarios:
 
   The sample demonstrates the core API usage in a simple scenario of capturing data from an image.
 
-- Image Capture (**sample-imagecapture**)
+- Image capture (**sample-imagecapture**)
 
   This simple image capture scenario demonstrates how to automatically capture an image from the smartphone video preview frames.
+
+- Single-page image capture with UI (**sample-ui-imagecapture**)
+
+  This sample illustrates the steps you need to perform to create a simple mobile application for image capture.
+  
+- Multipage image capture with UI (**sample-ui-imagecapture-multipage**)
+
+  The sample code implementing a multipage image capture scenario with tuned user interface.
 
 ## Prerequisites
 
