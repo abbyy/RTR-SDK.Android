@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- For landscape and tablet -->
+
+    <ImageView
+        android:id="@+id/send_image_view"
+        style="@style/ViewerSendImageViewStyle"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toStartOf="@+id/send_project_text_view"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_divider"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/divider_top_neighbour_barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="title_text_view" />
+
+    <TextView
+        android:id="@+id/send_project_text_view"
+        style="@style/SendProjectTextViewStyle"
+        android:layout_width="wrap_content"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/send_image_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/send_image_view"
+        tools:text="Project"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/send_state_image_view"
+        android:layout_width="@dimen/viewer_state_image_size"
+        android:layout_height="@dimen/viewer_state_image_size"
+        android:background="@android:color/white"
+        android:src="@drawable/ic_success"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/send_image_view"
+        app:layout_constraintTop_toTopOf="@id/send_image_view" />
+
+    <ProgressBar
+        android:id="@+id/send_progress_bar"
+        android:layout_width="@dimen/viewer_state_image_size"
+        android:layout_height="@dimen/viewer_state_image_size"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/send_image_view"
+        app:layout_constraintTop_toTopOf="@id/send_image_view" />
+
+</merge>

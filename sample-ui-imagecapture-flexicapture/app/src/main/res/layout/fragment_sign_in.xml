@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sign_in_bar_height">
+
+        <ImageView
+            android:id="@+id/close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|start"
+            android:layout_margin="12dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_back_arrow" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="72dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center_vertical"
+            android:text="@string/settings"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/close_button"
+            app:layout_constraintStart_toEndOf="@+id/close_button"
+            app:layout_constraintTop_toTopOf="@+id/close_button" />
+
+        <TextView
+            android:id="@+id/sign_out_button"
+            style="@style/TextButtonStyle"
+            android:layout_gravity="center_vertical|end"
+            android:layout_margin="16dp"
+            android:text="@string/sign_out_button"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </FrameLayout>
+
+    <ScrollView
+        style="@style/SignInScreenContentStyle"
+        android:layout_height="0dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="1">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="16dp">
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/start_guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="16dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/end_guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_end="16dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/edit_start_guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_begin="12dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/edit_end_guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintGuide_end="12dp" />
+
+            <TextView
+                android:id="@+id/url_title"
+                style="@style/SignInOverLineTextViewStyle"
+                android:layout_marginTop="8dp"
+                android:text="@string/url_title"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/url_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/sign_in_views_horizontal_margin"
+                android:hint="@string/url_hint"
+                android:imeOptions="flagNavigateNext"
+                android:inputType="textUri"
+                android:maxLines="1"
+                app:layout_constraintEnd_toEndOf="@id/edit_end_guideline"
+                app:layout_constraintStart_toStartOf="@+id/edit_start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/url_title"
+                tools:ignore="RtlSymmetry" />
+
+            <ImageView
+                android:id="@+id/url_lock_image_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_lock"
+                app:layout_constraintBottom_toBottomOf="@id/url_edit_text"
+                app:layout_constraintEnd_toEndOf="@id/end_guideline"
+                app:layout_constraintTop_toTopOf="@id/url_edit_text" />
+
+            <TextView
+                android:id="@+id/tenant_title"
+                style="@style/SignInOverLineTextViewStyle"
+                android:layout_marginTop="16dp"
+                android:text="@string/tenant_title"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/url_edit_text" />
+
+            <EditText
+                android:id="@+id/tenant_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/sign_in_views_horizontal_margin"
+                android:hint="@string/tenant_hint"
+                android:imeOptions="flagNavigateNext"
+                android:inputType="text"
+                android:maxLines="1"
+                app:layout_constraintEnd_toEndOf="@+id/edit_end_guideline"
+                app:layout_constraintStart_toStartOf="@+id/edit_start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/tenant_title" />
+
+            <ImageView
+                android:id="@+id/tenant_lock_image_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_lock"
+                app:layout_constraintBottom_toBottomOf="@id/tenant_edit_text"
+                app:layout_constraintEnd_toEndOf="@id/end_guideline"
+                app:layout_constraintTop_toTopOf="@id/tenant_edit_text" />
+
+            <TextView
+                android:id="@+id/username_title"
+                style="@style/SignInOverLineTextViewStyle"
+                android:layout_marginTop="16dp"
+                android:text="@string/username_title"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/tenant_edit_text" />
+
+            <EditText
+                android:id="@+id/username_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/sign_in_views_horizontal_margin"
+                android:hint="@string/username_hint"
+                android:imeOptions="flagNavigateNext"
+                android:inputType="text"
+                android:maxLines="1"
+                app:layout_constraintEnd_toEndOf="@+id/edit_end_guideline"
+                app:layout_constraintStart_toStartOf="@+id/edit_start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/username_title" />
+
+            <ImageView
+                android:id="@+id/username_lock_image_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_lock"
+                app:layout_constraintBottom_toBottomOf="@id/username_edit_text"
+                app:layout_constraintEnd_toEndOf="@id/end_guideline"
+                app:layout_constraintTop_toTopOf="@id/username_edit_text" />
+
+            <TextView
+                android:id="@+id/password_title"
+                style="@style/SignInOverLineTextViewStyle"
+                android:layout_marginTop="16dp"
+                android:text="@string/password_title"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/username_edit_text" />
+
+            <EditText
+                android:id="@+id/password_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/sign_in_views_horizontal_margin"
+                android:hint="@string/password_hint"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                app:layout_constraintEnd_toEndOf="@+id/edit_end_guideline"
+                app:layout_constraintStart_toStartOf="@+id/edit_start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/password_title" />
+
+            <TextView
+                android:id="@+id/connect_button"
+                style="@style/TextButtonStyle"
+                android:layout_marginTop="8dp"
+                android:text="@string/connect"
+                app:layout_constraintStart_toStartOf="@+id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/password_edit_text" />
+
+            <TextView
+                android:id="@+id/reconnect_button"
+                style="@style/TextButtonStyle"
+                android:layout_marginTop="8dp"
+                android:text="@string/reconnect"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/end_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/password_edit_text" />
+
+            <ProgressBar
+                android:id="@+id/sing_in_progress_bar"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/password_edit_text" />
+
+            <ImageView
+                android:id="@+id/connection_state_image_view"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="8dp"
+                android:src="@drawable/ic_success"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/password_edit_text" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/connection_state_end_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="end"
+                app:constraint_referenced_ids="connection_state_image_view,sing_in_progress_bar" />
+
+            <TextView
+                android:id="@+id/connection_state_text_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:letterSpacing="0.02"
+                android:maxLines="2"
+                android:textColor="@android:color/black"
+                app:layout_constraintBaseline_toBaselineOf="@+id/connection_state_text_view_baseline"
+                app:layout_constraintEnd_toStartOf="@+id/reconnect_button"
+                app:layout_constraintStart_toEndOf="@+id/connection_state_end_barrier"
+                app:layout_constraintTop_toBottomOf="@+id/password_edit_text"
+                tools:text="@string/connecting_to_server" />
+
+            <!-- Fake text view to align baseline -->
+            <TextView
+                android:id="@+id/connection_state_text_view_baseline"
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:text=""
+                app:layout_constraintTop_toBottomOf="@+id/password_edit_text" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/connect_divider_top_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="connection_state_text_view,connection_state_image_view,connect_button" />
+
+            <View
+                android:id="@+id/connection_divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="15dp"
+                android:background="#1e000000"
+                app:layout_constraintEnd_toEndOf="@id/end_guideline"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/connect_divider_top_barrier" />
+
+            <TextView
+                android:id="@+id/project_title"
+                style="@style/SignInOverLineTextViewStyle"
+                android:layout_marginTop="16dp"
+                android:text="@string/project_title"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/connection_divider" />
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/projects_spinner"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/sign_in_views_horizontal_margin"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="@dimen/sign_in_views_horizontal_margin"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/project_title" />
+
+            <View
+                android:id="@+id/project_divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="3dp"
+                android:background="#afbcc6"
+                app:layout_constraintEnd_toEndOf="@id/end_guideline"
+                app:layout_constraintStart_toStartOf="@id/start_guideline"
+                app:layout_constraintTop_toBottomOf="@+id/projects_spinner" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/build_number_top_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="project_divider,connection_divider" />
+
+            <TextView
+                android:id="@+id/build_number_text_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="48dp"
+                app:layout_constraintEnd_toEndOf="@+id/end_guideline"
+                app:layout_constraintStart_toStartOf="@+id/start_guideline"
+                app:layout_constraintTop_toTopOf="@+id/build_number_top_barrier" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+</LinearLayout>

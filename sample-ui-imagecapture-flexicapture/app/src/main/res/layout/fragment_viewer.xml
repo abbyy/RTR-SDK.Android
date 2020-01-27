@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/start_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="16dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/end_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_end="16dp" />
+
+    <ImageView
+        android:id="@+id/logo_image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_abbyy_mwc"
+        app:layout_constraintStart_toStartOf="@+id/start_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/settings_button_image_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_settings"
+        app:layout_constraintEnd_toEndOf="@+id/end_guideline"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/title_text_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/title_text_view_margin_top"
+        android:fontFamily="sans-serif-black"
+        android:text="@string/viewer_title"
+        android:textColor="@android:color/black"
+        android:textSize="34sp"
+        app:layout_constraintEnd_toEndOf="@id/end_guideline"
+        app:layout_constraintStart_toStartOf="@id/start_guideline"
+        app:layout_constraintTop_toBottomOf="@+id/logo_image_view" />
+
+    <include layout="@layout/merge_viewer_project_and_state" />
+
+    <View
+        android:id="@+id/title_divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="16dp"
+        android:background="@color/viewer_title_divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider_top_neighbour_barrier" />
+
+    <TextView
+        android:id="@+id/pages_count_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.03"
+        android:textColor="#424650"
+        android:textSize="16sp"
+        android:textStyle="normal"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@id/start_guideline"
+        app:layout_constraintTop_toBottomOf="@+id/title_divider" />
+
+    <TextView
+        android:id="@+id/delete_button_text_view"
+        style="@style/TextButtonStyle"
+        android:layout_marginTop="16dp"
+        android:text="@string/delete_button"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@+id/end_guideline"
+        app:layout_constraintTop_toBottomOf="@+id/title_divider" />
+
+    <TextView
+        android:id="@+id/send_button_text_view"
+        style="@style/TextButtonStyle"
+        android:layout_marginEnd="24dp"
+        android:text="@string/send_button"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/delete_button_text_view"
+        app:layout_constraintEnd_toStartOf="@+id/delete_button_text_view" />
+
+    <TextView
+        android:id="@+id/log_in_button_text_view"
+        style="@style/TextButtonStyle"
+        android:layout_marginEnd="24dp"
+        android:text="@string/log_in_button"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/delete_button_text_view"
+        app:layout_constraintEnd_toStartOf="@+id/delete_button_text_view" />
+
+    <ImageView
+        android:id="@+id/document_placeholder_image_view"
+        style="@style/ViewerDocumentPlaceholderStyle"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_document_placeholder"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/pages_recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="80dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pages_count_text_view" />
+
+    <View
+        android:id="@+id/pages_recycler_view_disable_overlay_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#aaffffff"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/pages_recycler_view"
+        app:layout_constraintEnd_toEndOf="@+id/pages_recycler_view"
+        app:layout_constraintStart_toStartOf="@+id/pages_recycler_view"
+        app:layout_constraintTop_toTopOf="@+id/pages_recycler_view" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/scan_new_document_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/scan_new_document"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add_white"
+        app:iconSize="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_page_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_add_white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/end_guideline"
+        app:maxImageSize="32dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

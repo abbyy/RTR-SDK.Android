@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="sign_in_views_horizontal_margin">8dp</dimen>
+    <dimen name="list_item_page_margin">16dp</dimen>
+    <dimen name="settings_locked_edit_text_padding">32dp</dimen>
+    <dimen name="title_text_view_margin_top">32dp</dimen>
+    <dimen name="list_item_page_height">140dp</dimen>
+    <dimen name="sign_in_bar_height">56dp</dimen>
+    <dimen name="viewer_state_image_size">24dp</dimen>
+</resources>

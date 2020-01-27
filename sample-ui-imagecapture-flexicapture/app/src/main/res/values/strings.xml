@@ -1,0 +1,71 @@
+<resources>
+    <string name="app_name">FlexiCapture</string>
+    <string name="url_title">URL</string>
+    <string name="url_hint">https://example.flexicapture.com</string>
+    <string name="tenant_title">Tenant name</string>
+    <string name="tenant_hint">tenant_name</string>
+    <string name="username_title">Username</string>
+    <string name="username_hint">username</string>
+    <string name="password_title">Password</string>
+    <string name="password_hint">password</string>
+    <string name="sign_in_button">Sign In</string>
+    <string name="settings">Settings</string>
+    <string name="connect">Connect &amp; Select project</string>
+    <string name="reconnect">reconnect</string>
+    <string name="connecting_to_server">Connecting to FlexiCapture Server</string>
+    <string name="no_connection_to_server">No connection to FlexiCapture Server</string>
+    <string name="connection_to_server">Connection to FlexiCapture Server</string>
+    <string name="project_title">Project</string>
+    <string name="select_project_hint">Connect first</string>
+
+    <string name="incorrect_url">Incorrect URL</string>
+    <string name="credentials_error">Wrong username, password or tenant</string>
+    <string name="default_error">Error occurred</string>
+    <string name="unknown_server_name">Unknown server URL</string>
+    <string name="connect_error">A connection error occurred when signing in</string>
+    <string name="empty_projects">No projects found. Log in to another profile.</string>
+
+    <string name="viewer_title">Scan document on any\u00A0device</string>
+
+    <string name="send_button">export</string>
+    <string name="delete_button">delete</string>
+
+    <string name="send_body_creation_error">Error occurred during image preparation before sending.
+        \nTry to retake document photos</string>
+    <string name="send_sign_in_error">User is not signed in</string>
+
+    <string name="scan_new_document">Scan new doc</string>
+
+    <string name="abbyy_mi_sdk">ABBYY MI SDK</string>
+
+    <string name="load_error">Loading images from disk error.\nTry to retake document photos</string>
+
+    <plurals name="page_count">
+        <item quantity="one">%1$d page</item>
+        <item quantity="other">%1$d pages</item>
+    </plurals>
+
+    <string name="delete_dialog_title">Delete all</string>
+    <string name="delete_dialog_message">Are you sure?</string>
+    <string name="delete_dialog_positive_button">@android:string/ok</string>
+    <string name="delete_dialog_positive_negative">@android:string/cancel</string>
+
+    <string name="sign_out_button">log out</string>
+
+    <string name="no_network_connection">No Internet connection</string>
+
+    <string name="enter_password_to_change_project">Enter password to change project</string>
+
+    <string name="sign_out_confirmation_dialog_title">Log Out</string>
+    <string name="sign_out_confirmation_dialog_message">Are you sure?</string>
+
+    <string name="ask_password_dialog_title">Log In</string>
+    <string name="ask_password_dialog_message">Enter password to export pages</string>
+    <string name="ask_password_dialog_positive_button">Done</string>
+    <string name="ask_password_dialog_negative_button">Cancel</string>
+
+    <string name="log_in_button">Log In</string>
+
+    <string name="build_number">Build: %1$s</string>
+
+</resources>

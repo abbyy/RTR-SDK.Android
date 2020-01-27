@@ -35,6 +35,10 @@ The samples cover the following scenarios:
 
   The sample code implementing a multipage image capture scenario with tuned user interface.
 
+- Integration with FlexiCapture (**sample-ui-imagecapture-flexicapture**)
+
+  In the sample is demonstrated how to set up connection between an application with multipage capture functionality as a front-end and FlexiCapture Application Server as a back-end and how to send captured documents to the server for further processing.
+
 ## Prerequisites
 
 To try out the real-time OCR technology using these samples, request ABBYY Mobile Capture trial version on the [ABBYY website](http://www.abbyy.com/mobile-capture-sdk/#request-demo). 
